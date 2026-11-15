@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>MY Q</title>
+<!--
+  큐큐 차량 화면 (Pleos Connect 앱의 WebView에서 표시).
+  화면만 그린다: 서버 연결·TTS·STT·차량 신호는 앱(Kotlin)이 맡는다.
+    앱 → 화면:  HU.update(state), HU.topics({categories, topics})
+    화면 → 앱:  Android.action(name, arg)   name: skip | story | relay | mic | topic | approve | reject | diaryClose | end
+  브라우저에서 열면 Android가 없으므로 ?preview 로 가짜 상태를 돌려 볼 수 있다.
+-->
+<style>
+:root{
+  --unit:#0a1730; --unit-2:#11234a; --unit-3:#1a3263; --unit-line:#24407a;
+  --ink:#f4f7fc; --ink-2:#b8c6df; --ink-3:#7f93b8;
+  --cream:#fdfbf8; --navy:#142a54; --navy-line:#264b83; --cheek:#ffc2cd;
+  --accent:#ff6b4a; --onair:#ff4d4d; --ok:#5fd3a0; --warn:#f2c45a; --nav:#3d8bff; --me:#9cc2ff; --story:#ffd59a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--unit);color:var(--ink);overflow:hidden;
+  font-family:-apple-system,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Noto Sans CJK KR",sans-serif;user-select:none;-webkit-user-select:none}
+button{font:inherit;cursor:pointer}
+
+/* ---------- head unit: fills the car screen ---------- */
+.unit{position:relative;width:100vw;height:100vh;overflow:hidden;background:radial-gradient(120% 90% at 20% 10%,var(--unit-3) 0%,var(--unit) 55%);
+  display:grid;grid-template-rows:auto 1fr auto;container-type:inline-size}
+.statusbar{display:flex;align-items:center;gap:14px;padding:1.4cqw 2.4cqw .6cqw;font-size:max(13px,1.2cqw);color:var(--ink-2)}
+.statusbar .time{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.statusbar .right{margin-left:auto;display:flex;gap:14px;align-items:center}
+.statusbar .brand{font-weight:800;letter-spacing:.14em;color:var(--ink)}
+.statusbar .brand em{font-style:normal;color:var(--accent)}
+.statusbar .note{color:var(--accent);opacity:0;transition:opacity .4s}
+.statusbar .note.on{opacity:1}
+.statusbar .conn.off{color:var(--warn)}
+.statusbar .endbtn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:var(--ink-2);border-radius:99px;padding:.3cqw 1.1cqw;font-size:max(12px,1.05cqw)}
+.statusbar .endbtn:disabled{opacity:.35}
+.statusbar .dev{background:var(--warn);color:#000;border:0;border-radius:99px;padding:.1cqw .8cqw;font-size:max(10px,.9cqw);font-weight:800}
+
+.body{display:grid;grid-template-columns:38% minmax(0,1fr);gap:2.4cqw;padding:.8cqw 2.4cqw 0;min-height:0;min-width:0}
+@media (max-width:1000px){.statusbar{gap:10px}.statusbar #eta,.statusbar .note{display:none}}
+
+/* character */
+.face{position:relative;background:var(--cream);border-radius:2.4cqw;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;transition:background .5s;overflow:hidden}
+.eyes{display:flex;gap:3.2cqw;align-items:center;margin-top:-3cqw}
+.eye{width:8.6cqw;height:11cqw;min-width:54px;min-height:70px;background:#fff;border:3px solid var(--navy-line);border-radius:49%;position:relative;overflow:hidden;transition:all .45s cubic-bezier(.3,1.3,.5,1);box-shadow:inset 0 -4px 6px #c7d9ed55}
+.pupil{position:absolute;width:48%;height:63%;left:26%;top:22%;background:var(--navy);border-radius:45%;transition:transform .6s}
+.pupil:after{content:"";position:absolute;width:36%;height:26%;left:14%;top:12%;background:#fff;border-radius:50%}
+.lid{position:absolute;inset:0;background:var(--cream);transform:translateY(-102%);transition:transform .12s ease-in}
+.face.blink .lid{transform:translateY(0)}
+.cheek{width:2.4cqw;height:1.2cqw;min-width:16px;min-height:8px;border-radius:50%;background:var(--cheek);opacity:.8;align-self:flex-end;margin-bottom:2cqw;transition:opacity .4s}
+.mouth{width:2cqw;min-width:14px;height:1cqw;min-height:7px;border-bottom:3px solid var(--navy-line);border-radius:0 0 50% 50%;margin-top:1cqw;transform-origin:50% 0;transition:transform .2s}
+.face.speaking .mouth{animation:talk .42s ease-in-out infinite alternate}
+.face.preparing .pupil,.face.thinking .pupil{transform:translate(-14%,-24%)}
+.face.listening .eye{transform:scale(1.06)} .face.listening .pupil{transform:translateY(6%)}
+.face.nav{background:#e3e9f4}
+.face.nav .eye{width:5.2cqw;height:6.6cqw;min-width:36px;min-height:46px}
+.face.nav .cheek{opacity:.25}
+.face.parked .eye{height:1.2cqw;min-height:8px;border-radius:0 0 50% 50%;border-top:0}
+.face.parked .pupil,.face.parked .lid{display:none}
+@keyframes talk{from{transform:scaleY(.5)}to{transform:scaleY(1.8)}}
+.viz{position:absolute;left:12%;right:12%;bottom:2.6cqw;height:3.2cqw;min-height:22px;display:flex;align-items:flex-end;justify-content:center;gap:.45cqw}
+.viz i{flex:1;max-width:10px;height:100%;border-radius:3px;background:var(--navy-line);opacity:.22;transform-origin:50% 100%;transform:scaleY(.1);transition:transform .2s ease,opacity .3s}
+.face.speaking .viz i{opacity:.75} .face.listening .viz i{background:var(--accent);opacity:.8} .face.music .viz i{background:var(--accent);opacity:.55}
+.face .tag{position:absolute;top:1.6cqw;left:1.8cqw;font-size:max(12px,1.1cqw);color:#4d6991;display:flex;gap:6px;align-items:center;font-weight:600}
+.face .tag i{width:7px;height:7px;border-radius:50%;background:#9fb0cc}
+.face.speaking .tag i{background:var(--onair);box-shadow:0 0 0 4px rgba(255,77,77,.18)}
+.face.listening .tag i{background:var(--accent);animation:pulse 1s infinite}
+
+/* show column */
+.show{display:flex;flex-direction:column;min-width:0;min-height:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-height:max(20px,2cqw)}
+.chip{font-size:max(12px,1.05cqw);padding:.25cqw .9cqw;border-radius:99px;background:rgba(255,255,255,.08);color:var(--ink-2);white-space:nowrap}
+.chip.onair{background:rgba(255,77,77,.16);color:#ffb3a8;font-weight:700;letter-spacing:.08em}
+.chip.onair:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--onair);margin-right:6px;vertical-align:1px}
+.chip.ok{color:var(--ok);background:rgba(95,211,160,.12)} .chip.warn{color:var(--warn);background:rgba(242,196,90,.12)}
+.chip.story{color:#1a1206;background:var(--story);font-weight:700} .chip.held{color:var(--story);background:rgba(255,213,154,.14)}
+.face.storymode{box-shadow:inset 0 0 0 4px var(--story)}
+@keyframes pulse{50%{opacity:.35}}
+.program{font-size:max(12px,1.1cqw);color:var(--ink-3);letter-spacing:.06em;margin-top:1cqw}
+.q{font-size:max(20px,2.6cqw);font-weight:800;line-height:1.32;letter-spacing:-.02em;margin:.4cqw 0 0;transition:opacity .4s;word-break:keep-all}
+.timeline{margin-top:1.4cqw}
+/* one continuous progress bar (chapters fill it), with a knob at the current chapter */
+.track{display:flex;height:5px;border-radius:99px;background:rgba(255,255,255,.13)}
+.track span{flex:1;min-width:4px;position:relative}
+.track span.done,.track span.now{background:var(--accent)}
+.track span:first-child{border-radius:99px 0 0 99px}
+.track span.now{border-radius:0 99px 99px 0}
+.track span.now:after{content:"";position:absolute;right:-7px;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,107,74,.35)}
+.track span.pending{background:repeating-linear-gradient(90deg,rgba(255,255,255,.16) 0 5px,transparent 5px 9px);background-size:18px 100%}
+.tmeta{display:flex;justify-content:space-between;margin-top:.6cqw;font-size:max(12px,1.1cqw);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.tmeta b{color:var(--ink-2);font-weight:600}
+
+/* caption: one sentence at a time */
+.caption{margin-top:auto;padding:1.4cqw 0 .4cqw;min-height:7.4cqw}
+.caption .who{font-size:max(12px,1.05cqw);font-weight:700;color:var(--accent);margin-bottom:.35cqw;letter-spacing:.04em}
+.caption .text{font-size:max(17px,1.85cqw);line-height:1.5;color:var(--ink);font-weight:500;transition:opacity .25s,transform .25s;word-break:keep-all}
+.caption .text.swap{opacity:0;transform:translateY(4px)}
+.caption.me .who,.caption.me .text{color:var(--me)}
+.caption.story .who{color:var(--story)}
+.caption.music .who{color:var(--ok)}
+.caption.soft .text{color:var(--ink-2);font-weight:400}
+
+/* dock */
+.dock{display:flex;align-items:center;gap:1.1cqw;padding:1.2cqw 2.4cqw 1.6cqw}
+.dock .btn{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);color:var(--ink);border-radius:1.3cqw;padding:1.1cqw 1.6cqw;font-size:max(15px,1.35cqw);font-weight:600;min-height:52px}
+.dock .btn:active:not(:disabled){background:rgba(255,255,255,.16)}
+.dock .btn:disabled{opacity:.32}
+.dock svg{width:1.8cqw;height:1.8cqw;min-width:18px;min-height:18px}
+.dock .btn{white-space:nowrap;flex:none}
+.dock .why{font-size:max(12px,1.05cqw);color:var(--ink-3);min-width:0}
+@media (max-width:1000px){.dock .why{display:none}.dock .btn svg{display:none}.dock{gap:8px}.dock .btn{padding:10px 12px}}
+.mic{margin-left:auto;width:6.6cqw;height:6.6cqw;min-width:64px;min-height:64px;border-radius:50%;border:0;background:var(--accent);color:#fff;display:grid;place-items:center;box-shadow:0 8px 24px -8px rgba(255,107,74,.8)}
+.mic svg{width:2.6cqw;height:2.6cqw;min-width:24px;min-height:24px}
+.mic:disabled{opacity:.35;box-shadow:none}
+.mic.listening{animation:ring 1.1s infinite}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(255,107,74,.6)}100%{box-shadow:0 0 0 22px rgba(255,107,74,0)}}
+
+/* nav banner */
+.navbanner{position:absolute;left:2.4cqw;right:2.4cqw;top:3.8cqw;display:flex;align-items:center;gap:1.6cqw;background:var(--nav);color:#fff;border-radius:1.6cqw;padding:1.2cqw 1.8cqw;transform:translateY(-160%);opacity:0;transition:all .35s cubic-bezier(.3,1.2,.5,1);z-index:5;box-shadow:0 12px 30px -10px rgba(0,0,0,.6)}
+.unit.nav .navbanner{transform:none;opacity:1}
+.navbanner .arrow{font-size:max(26px,3.2cqw);line-height:1}
+.navbanner b{font-size:max(17px,1.9cqw);display:block}
+.navbanner small{opacity:.85;font-size:max(12px,1.2cqw)}
+
+/* sheets */
+.scrim{position:absolute;inset:0;background:rgba(3,8,20,.55);opacity:0;pointer-events:none;transition:opacity .25s;z-index:8}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:82%;background:var(--unit-2);border-top:1px solid var(--unit-line);border-radius:2cqw 2cqw 0 0;transform:translateY(102%);visibility:hidden;transition:transform .32s cubic-bezier(.3,1.1,.5,1),visibility 0s linear .32s;z-index:9;display:flex;flex-direction:column}
+.sheet.open{transform:none;visibility:visible;transition:transform .32s cubic-bezier(.3,1.1,.5,1)}
+.sheet header{display:flex;align-items:center;padding:1.6cqw 2.4cqw 1cqw;gap:10px}
+.sheet header h3{margin:0;font-size:max(17px,1.75cqw)}
+.sheet header button{margin-left:auto;background:rgba(255,255,255,.08);border:0;color:var(--ink);border-radius:99px;padding:.7cqw 1.6cqw;min-height:44px}
+.sheet .content{overflow:auto;padding:0 2.4cqw 2cqw}
+.primarybtn{background:var(--accent);border:0;color:#fff;border-radius:1.2cqw;padding:1.2cqw 2cqw;font-weight:700;min-height:52px;font-size:max(15px,1.35cqw)}
+.ghost{background:rgba(255,255,255,.08);border:0;color:var(--ink);border-radius:1.2cqw;padding:1.2cqw 2cqw;min-height:52px;font-size:max(15px,1.35cqw)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.hint{color:var(--ink-3);font-size:max(12px,1.15cqw);margin-top:1.2cqw}
+.sheet .story{background:rgba(255,255,255,.06);border:1px dashed rgba(255,255,255,.25);border-radius:1.2cqw;padding:1.4cqw;font-size:max(15px,1.45cqw);line-height:1.6;margin-bottom:1.2cqw}
+.cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.2cqw}
+.cats button{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);color:var(--ink-2);border-radius:99px;padding:.6cqw 1.5cqw;min-height:40px}
+.cats button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.topics{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1cqw}
+.topics button{text-align:left;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--ink);border-radius:1.2cqw;padding:1.2cqw 1.4cqw;font-size:max(14px,1.35cqw);line-height:1.45;word-break:keep-all}
+.topics button.cur{border-color:var(--accent)}
+.topics small{color:var(--ink-3)}
+.diary{display:grid;grid-template-columns:auto 1fr;gap:2.4cqw;align-items:center}
+.diary img{width:min(26cqw,300px);height:auto;background:#fff;border-radius:1.2cqw;padding:1cqw;image-rendering:pixelated}
+.diary .big{font-size:max(18px,2cqw);font-weight:800;line-height:1.4;margin:0 0 .8cqw;word-break:keep-all}
+.diary p{color:var(--ink-2);font-size:max(14px,1.35cqw);line-height:1.6;margin:0}
+.diaryart{display:block;width:min(46cqw,420px);aspect-ratio:1;object-fit:cover;border-radius:1.6cqw;margin:0 auto 1.6cqw;box-shadow:0 10px 30px -12px rgba(0,0,0,.6)}
+.withart .diary{grid-template-columns:auto 1fr}
+.withart .diary img{width:min(12cqw,120px);padding:.6cqw}
+.withart .diary .big{font-size:max(15px,1.5cqw)} .withart .diary p:not(.big){display:none}
+.log{font:12px/1.5 ui-monospace,Menlo,monospace;color:var(--ink-2);white-space:pre-wrap;word-break:break-all}
+/* Square or tall window (beside the navigation while driving): a music-player layout.
+   Album-art card (큐큐) → title (today's question) → progress → caption like lyrics → round player controls. */
+@media (max-aspect-ratio:1/1){
+  .unit{background:linear-gradient(180deg,#14284f 0%,#0b1834 46%,#081227 100%)}
+  .statusbar{padding:4cqw 6cqw 1cqw;font-size:max(12px,2.6cqw)}
+  .statusbar .time,.statusbar #eta,.statusbar .note{display:none}
+  .statusbar .brand{font-size:max(13px,3cqw);letter-spacing:.06em}
+  .statusbar .endbtn{font-size:max(11px,2.4cqw);padding:.8cqw 2.6cqw}
+  .unit{grid-template-rows:auto minmax(0,1fr) auto}
+  .body{display:flex;flex-direction:column;gap:0;padding:2cqw 6cqw 0;min-height:0;overflow:hidden}
+  /* art card */
+  .face{flex:0 0 34cqw;border-radius:5cqw;background:linear-gradient(160deg,#fffdf9 0%,#f6efe6 100%);
+    box-shadow:0 5cqw 10cqw -5cqw rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,255,255,.6)}
+  .face.nav{background:linear-gradient(160deg,#eef2f9,#dfe6f2)}
+  .eye{width:12cqw;height:15cqw}
+  .face.nav .eye{width:10cqw;height:12.6cqw}
+  .face.parked .eye{height:2.4cqw}
+  .eyes{gap:6cqw;margin-top:-4cqw}
+  .cheek{width:4.6cqw;height:2.3cqw;margin-bottom:3.4cqw}
+  .mouth{width:4cqw;height:2cqw;margin-top:2cqw}
+  .viz{bottom:3cqw;height:4.6cqw;gap:1cqw}
+  .viz i{max-width:12px}
+  .face .tag{top:3.4cqw;left:4cqw;font-size:max(11px,2.5cqw);padding:.9cqw 2.4cqw;border-radius:99px;background:rgba(20,42,84,.06)}
+  .face.storymode{box-shadow:0 5cqw 10cqw -5cqw rgba(0,0,0,.65),inset 0 0 0 1.2cqw var(--story)}
+  /* title block */
+  .show{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+  .chips{order:2;flex:none;margin-top:2.4cqw;min-height:0;gap:1.4cqw}
+  .chip{font-size:max(11px,2.4cqw);padding:.7cqw 2.2cqw}
+  .program{order:0;margin-top:3.6cqw;font-size:max(11px,2.5cqw);letter-spacing:.12em;color:var(--ink-3);text-transform:uppercase}
+  .q{order:1;flex:none;font-size:max(20px,5.6cqw);line-height:1.28;margin-top:1.4cqw;letter-spacing:-.03em;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .timeline{order:3;flex:none;margin-top:3.4cqw}
+  .tmeta{margin-top:2cqw;font-size:max(11px,2.5cqw)}
+  /* caption like lyrics */
+  .show .caption{order:4;margin-top:auto;margin-bottom:auto;min-height:0;flex:none;padding:3.6cqw 4.4cqw;border-radius:4cqw;
+    background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.06)}
+  .caption .who{font-size:max(11px,2.5cqw);margin-bottom:1.2cqw}
+  .caption .text{font-size:max(15px,3.7cqw);line-height:1.5;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .caption.story{background:rgba(255,213,154,.08);border-color:rgba(255,213,154,.18)}
+  .caption.me{background:rgba(156,194,255,.08);border-color:rgba(156,194,255,.18)}
+  /* player controls: four round buttons with labels, the mic big in the middle */
+  .dock{flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:0;padding:3cqw 6cqw 4cqw}
+  .dock .btn{order:1;flex-direction:column;gap:1.6cqw;background:none;border:0;padding:0;min-height:0;width:16cqw;
+    font-size:max(10px,2.3cqw);font-weight:600;color:var(--ink-2)}
+  .dock #storyBtn,.dock #relayBtn{order:3}
+  .dock .btn svg{width:12cqw;height:12cqw;padding:3.3cqw;border-radius:50%;background:rgba(255,255,255,.08);color:var(--ink);box-sizing:border-box}
+  .dock .btn:disabled{opacity:.38}
+  .dock .btn svg,.dock .btn{display:flex}
+  .mic{order:2;margin:0;width:17cqw;height:17cqw;margin-top:-2.5cqw}
+  .mic svg{width:7cqw;height:7cqw}
+  .dock .why{display:none!important}
+  .navbanner{left:6cqw;right:6cqw;top:12cqw;border-radius:4cqw;padding:3.6cqw 4.4cqw;gap:3.6cqw}
+  .navbanner .arrow{font-size:max(26px,8cqw)}
+  .navbanner b{font-size:max(15px,3.8cqw)} .navbanner small{font-size:max(11px,2.6cqw)}
+  /* sheets */
+  .sheet{border-radius:5cqw 5cqw 0 0}
+  .sheet header{padding:5cqw 6cqw 3cqw}
+  .sheet header h3{font-size:max(17px,4.4cqw)}
+  .sheet header button{padding:1.6cqw 3.6cqw}
+  .sheet .content{padding:0 6cqw 6cqw}
+  .sheet .story{font-size:max(15px,3.8cqw);border-radius:3cqw;padding:4cqw}
+  .primarybtn,.ghost{font-size:max(15px,3.6cqw);border-radius:3cqw;padding:3cqw 5cqw;flex:1}
+  .hint,.diary p{font-size:max(12px,3cqw)}
+  .diary{grid-template-columns:1fr;justify-items:center;text-align:center;gap:4cqw}
+  .diary img{width:44cqw;border-radius:3cqw;padding:2.4cqw}
+  .diary .big{font-size:max(17px,4.6cqw)}
+  .topics{grid-template-columns:1fr}
+  .withart{max-height:96%}
+  .diaryart{width:74cqw;border-radius:4cqw;margin-bottom:4cqw}
+  .withart .diary{grid-template-columns:auto 1fr;text-align:left;justify-items:start;gap:4cqw}
+  .withart .diary img{width:18cqw;padding:1.2cqw;border-radius:2cqw}
+  .withart .diary .big{font-size:max(13px,3.4cqw)}
+  .topics button{font-size:max(14px,3.6cqw);border-radius:3cqw;padding:3cqw 4cqw}
+}
+/* split window: as few words as a real player — no program line or category text, icon-only controls */
+@media (max-aspect-ratio:1/1){
+  .program,#cat,.tmeta #chapLabel{display:none!important}
+  .statusbar .brand{display:none}   /* the window title already names the app */
+  .statusbar .conn{font-size:0} .statusbar .conn:before{content:"●";font-size:max(12px,2.6cqw);color:var(--ok)} .statusbar .conn.off:before{color:var(--warn)}
+  .q{margin-top:5cqw}
+  .dock .btn{font-size:0;gap:0}
+  .caption .text{-webkit-line-clamp:3}
+  .show .caption{min-height:0}
+}
+/* dock buttons hide their icons on narrow screens; the player layout above keeps them */
+@media (max-width:1000px) and (max-aspect-ratio:1/1){.dock .btn svg{display:block}}
+/* Split window, light player (matches the car's own media panel): soft blue gradient, square art in the middle,
+   centered title, thin white progress, white icon controls. */
+@media (max-aspect-ratio:1/1){
+  .unit{background:linear-gradient(165deg,#6f9be3 0%,#8db1ec 48%,#b9cff4 100%);color:#fff}
+  .statusbar{padding:3cqw 5cqw 0;justify-content:flex-end}
+  .statusbar .conn,.statusbar #tripLabel{display:none}
+  .statusbar .endbtn{background:rgba(255,255,255,.22);border:0;color:#fff}
+  .body{padding:2cqw 8cqw 0;align-items:center}
+  .face{flex:none;width:52cqw;height:52cqw;align-self:center;border-radius:4.5cqw;box-shadow:0 4cqw 9cqw -4cqw rgba(20,40,90,.55)}
+  .eye{width:10cqw;height:12.8cqw} .face.nav .eye{width:7cqw;height:9cqw}
+  .eyes{gap:5cqw;margin-top:-3cqw} .cheek{width:3.6cqw;height:1.8cqw;margin-bottom:2.6cqw}
+  .viz{bottom:3.4cqw;height:4.4cqw;left:18%;right:18%}
+  .face .tag{display:none}
+  .show{width:100%;align-items:center;text-align:center}
+  .q{color:#fff;font-size:max(18px,5.2cqw);margin-top:6cqw;text-shadow:0 2px 12px rgba(30,60,120,.25)}
+  .chips{justify-content:center}
+  .chip{background:rgba(255,255,255,.22);color:#fff}
+  .chip.onair{background:rgba(255,77,77,.9);color:#fff}
+  .chip.story{background:#fff;color:#7a4a00} .chip.held{background:rgba(255,255,255,.22);color:#fff}
+  .timeline{width:100%}
+  .track{background:rgba(255,255,255,.35);height:4px}
+  .track span.done,.track span.now{background:#fff}
+  .track span.now:after{box-shadow:none;width:12px;height:12px;margin-top:-6px;right:-6px}
+  .tmeta,.tmeta b{color:rgba(255,255,255,.85)}
+  .show .caption{background:none;border:0;padding:0 2cqw;text-align:center}
+  .caption .who{display:none}
+  .caption .text,.caption.me .text{color:#fff;font-size:max(14px,3.5cqw);font-weight:500}
+  .caption.soft .text{color:rgba(255,255,255,.8)}
+  .caption.me .text{font-style:normal;opacity:.95}
+  .caption.story,.caption.me{background:none;border:0}
+  .dock .btn svg{background:none;color:#fff;padding:3cqw}
+  .dock .btn:disabled{opacity:.45}
+  .mic{background:#fff;color:var(--accent);box-shadow:0 3cqw 7cqw -3cqw rgba(20,40,90,.6)}
+  .mic:disabled{opacity:.6}
+  .face.storymode{box-shadow:0 4cqw 9cqw -4cqw rgba(20,40,90,.55),inset 0 0 0 1.2cqw var(--story)}
+}
+</style>
+</head>
+<body>
+<div class="unit" id="unit">
+  <div class="statusbar">
+    <span class="time" id="clock">--:--</span>
+    <span id="tripLabel">MY Q</span>
+    <span id="eta"></span>
+    <span class="right">
+      <span class="note" id="noteIcon">♪</span>
+      <span class="conn" id="conn">● 연결 중</span>
+      <button class="dev" id="devBtn" hidden>DEV</button>
+      <button class="endbtn" id="endBtn">방송 종료</button>
+      <span class="brand">MY<em> Q</em></span>
+    </span>
+  </div>
+
+  <div class="body">
+    <div class="face idle" id="face">
+      <div class="tag"><i></i><span id="faceTag">큐큐</span></div>
+      <div class="eyes">
+        <i class="cheek"></i>
+        <i class="eye"><b class="pupil"></b><b class="lid"></b></i>
+        <i class="eye"><b class="pupil"></b><b class="lid"></b></i>
+        <i class="cheek"></i>
+      </div>
+      <div class="mouth"></div>
+      <div class="viz" id="viz"></div>
+    </div>
+
+    <div class="show">
+      <div class="chips">
+        <span class="chip onair" id="onair" hidden>ON AIR</span>
+        <span class="chip" id="cat" hidden></span>
+        <span class="chip" id="modeChip" hidden></span>
+        <span class="chip story" id="storyChip" hidden>💌 사연 받는 중 · 말씀해 주세요</span>
+        <span class="chip held" id="heldChip" hidden></span>
+      </div>
+      <div class="program" id="program">MY Q · 길 위의 라디오</div>
+      <div class="q" id="question">오늘의 이야기를 고르고 있어요</div>
+      <div class="timeline">
+        <div class="track" id="track"></div>
+        <div class="tmeta"><span id="chapLabel"></span><span id="epClock"></span></div>
+      </div>
+      <div class="caption soft" id="caption">
+        <div class="who" id="who">큐큐</div>
+        <div class="text" id="line">서버에 연결하고 있어요.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dock">
+    <button class="btn" id="topicBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>주제</button>
+    <button class="btn" id="skipBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l9 7-9 7V5zM19 5v14"/></svg>다른 이야기</button>
+    <button class="btn" id="storyBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4V5z"/></svg>사연 보내기</button>
+    <button class="btn" id="relayBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h11l-3-3M20 17H9l3 3"/></svg>사연 릴레이</button>
+    <span class="why" id="why">주행 중에는 말로 해 주세요</span>
+    <button class="mic" id="micBtn" aria-label="큐큐에게 말하기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button>
+  </div>
+
+  <div class="navbanner" id="navbanner">
+    <span class="arrow">↱</span>
+    <div><b>내비게이션 안내 중</b><small>안내가 끝나면 큐큐가 하던 이야기를 이어 갈게요</small></div>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+  <section class="sheet" id="storySheet"><header><h3>이 사연을 다른 운전자에게 전할까요?</h3></header>
+    <div class="content"><div class="story" id="storyText"></div>
+      <div class="row"><button class="primarybtn" id="approveBtn">익명으로 공유</button><button class="ghost" id="rejectBtn">공개 안 함</button></div>
+      <p class="hint">이름·연락처 같은 개인정보는 빼고 전해요. 공유하면 비슷한 길 위의 운전자에게 들려줘요.</p></div></section>
+  <section class="sheet" id="diarySheet"><header><h3>오늘의 Q Diary가 완성됐어요</h3><button id="diaryClose">닫기</button></header>
+    <div class="content"><img id="diaryArt" class="diaryart" alt="오늘의 그림일기" hidden><div class="diary"><img id="diaryQr" alt="Q Diary QR 코드">
+      <div><p class="big">휴대폰 카메라로 찍으면<br>오늘의 그림일기가 열려요</p><p>차 화면이 꺼져도 휴대폰에서 다시 볼 수 있어요.</p></div></div></div></section>
+  <section class="sheet" id="endSheet"><header><h3>큐큐 방송을 끝낼까요?</h3></header>
+    <div class="content"><p class="hint" style="margin-top:0">연결이 끊기고, 다시 앱을 열면 새 방송이 시작돼요.</p>
+      <div class="row"><button class="primarybtn" id="endYes">종료</button><button class="ghost" data-close>계속 듣기</button></div></div></section>
+  <section class="sheet" id="topicSheet"><header><h3>어떤 이야기를 들을까요?</h3><button data-close>닫기</button></header>
+    <div class="content"><div class="cats" id="cats"></div><div class="topics" id="topics"></div></div></section>
+  <section class="sheet" id="devSheet"><header><h3>개발용 상태</h3><button data-close>닫기</button></header>
+    <div class="content"><div class="log" id="devLog"></div></div></section>
+</div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const bridge = window.Android || {action: (n, a) => console.log('[Android.action]', n, a ?? '')};
+const act = (name, arg) => bridge.action(name, arg == null ? '' : String(arg));
+const ROLE = {HOOK:'오프닝', FRAME:'도입', PERSPECTIVE:'관점', BOOK:'책 한 권', OUTRO:'마무리'};
+const TRIP = {TO_WORK:'출근길', FROM_WORK:'퇴근길'};
+const FACE_TAG = {idle:'큐큐', speaking:'방송 중', preparing:'이야기 준비 중', thinking:'생각 중', listening:'듣고 있어요',
+                  nav:'안내 중 · 잠시 조용히', parked:'주차 완료', music:'음악 중'};
+const hhmm = d => d.toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit', hour12:false});
+const mmss = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+const sentences = t => (String(t).match(/[^.!?…]+[.!?…]*["'”’)]*\s*/g) || [t]).map(x => x.trim()).filter(Boolean);
+
+let S = {mode:'idle', stopped:false, eta:null, epKey:null, epStart:0, cap:null, capTimers:[], topics:null, catFilter:'', topicKey:null,
+         sheet:null, approvalKey:null, diaryKey:null};
+
+/* ---------- face & visualizer ---------- */
+const BARS = 16; $('viz').innerHTML = '<i></i>'.repeat(BARS);
+// Emulator CPU is tight (voice stutters), so nothing loops while idle:
+// bars move only while speaking/listening/music, and the eyes blink now and then.
+const LIVE = ['speaking', 'listening', 'music'];
+let vizTimer = null;
+function vizFrame(){
+  const bars = $('viz').children, t = performance.now() / 1000;
+  for (let i = 0; i < BARS; i++) {
+    let h = .1;
+    if (S.mode === 'speaking') h = .2 + Math.random() * .75;
+    else if (S.mode === 'listening') h = .15 + Math.random() * .85;
+    else if (S.mode === 'music') h = .18 + .3 * (1 + Math.sin(t * 2.2 + i * .55)) / 2;
+    bars[i].style.transform = `scaleY(${h.toFixed(2)})`;
+  }
+}
+function syncViz(){
+  const live = LIVE.includes(S.mode);
+  if (live && !vizTimer) vizTimer = setInterval(vizFrame, 220);
+  if (!live && vizTimer) { clearInterval(vizTimer); vizTimer = null; vizFrame(); }
+}
+setInterval(() => {
+  if (S.mode === 'parked' || document.hidden) return;
+  $('face').classList.add('blink'); setTimeout(() => $('face').classList.remove('blink'), 140);
+}, 6000);
+function setMode(m){
+  S.mode = m;
+  ['idle','speaking','preparing','thinking','listening','nav','parked','music'].forEach(c => $('face').classList.toggle(c, c === m));
+  $('faceTag').textContent = FACE_TAG[m] || '큐큐';
+  $('unit').classList.toggle('nav', m === 'nav');
+  $('onair').hidden = !(m === 'speaking' || m === 'music');
+  $('micBtn').classList.toggle('listening', m === 'listening');
+  $('noteIcon').classList.toggle('on', m === 'music');
+  syncViz();
+}
+
+/* ---------- caption: a long segment is shown one sentence at a time ---------- */
+function showLine(who, text, kind){
+  const el = $('line'); el.classList.add('swap');
+  setTimeout(() => { $('who').textContent = who; el.textContent = text; $('caption').className = 'caption ' + (kind || ''); el.classList.remove('swap'); }, 160);
+}
+function setCaption(c){
+  const key = c ? c.who + '|' + c.text + '|' + (c.kind || '') : '';
+  if (key === S.cap) return;
+  S.cap = key; S.capTimers.forEach(clearTimeout); S.capTimers = [];
+  if (!c || !c.text) { showLine((c && c.who) || '', '', 'soft'); return; }   // empty caption = clear what is on screen
+  const parts = (c.kind === 'dj' || c.kind === 'story') ? sentences(c.text) : [c.text];
+  let at = 0;
+  parts.forEach((p, i) => {
+    S.capTimers.push(setTimeout(() => showLine(c.who, p, c.kind), at));
+    at += Math.max(1800, p.length / 5.5 * 1000) + 450;   // ~330 chars/min TTS + the app's pause between sentences
+  });
+}
+
+/* ---------- clock, ETA ---------- */
+function tick(){
+  const d = new Date(); $('clock').textContent = hhmm(d);
+  $('eta').textContent = S.eta != null ? `도착 ${hhmm(new Date(d.getTime() + S.eta * 1000))}` : '';
+  $('epClock').innerHTML = S.epStart ? `<b>${mmss((Date.now() - S.epStart) / 1000)}</b>` : '';
+}
+setInterval(tick, 1000); tick();
+
+/* ---------- sheets ---------- */
+function openSheet(id){ S.sheet = id; document.querySelectorAll('.sheet').forEach(s => s.classList.toggle('open', s.id === id)); $('scrim').classList.toggle('open', !!id); }
+function closeSheet(){ openSheet(null); }
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeSheet);
+$('scrim').onclick = () => { if (S.sheet === 'topicSheet' || S.sheet === 'endSheet' || S.sheet === 'devSheet') closeSheet(); };
+
+/* ---------- buttons → app ---------- */
+$('skipBtn').onclick = () => act('skip');
+$('storyBtn').onclick = () => act('story');
+$('relayBtn').onclick = () => act('relay');
+$('micBtn').onclick = () => act('mic');
+$('topicBtn').onclick = () => { renderTopics(); openSheet('topicSheet'); };
+$('endBtn').onclick = () => openSheet('endSheet');
+$('endYes').onclick = () => { closeSheet(); act('end'); };
+$('approveBtn').onclick = () => { closeSheet(); act('approve'); };
+$('rejectBtn').onclick = () => { closeSheet(); act('reject'); };
+$('diaryClose').onclick = () => { closeSheet(); act('diaryClose'); };
+$('devBtn').onclick = () => openSheet('devSheet');
+
+function renderTopics(){
+  const c = S.topics; if (!c) { $('topics').innerHTML = '<p class="hint">주제 목록을 불러오는 중이에요.</p>'; return; }
+  $('cats').innerHTML = `<button class="${!S.catFilter ? 'on' : ''}" data-c="">전체</button>` +
+    Object.entries(c.categories).map(([k, v]) => `<button class="${S.catFilter === k ? 'on' : ''}" data-c="${esc(k)}">${esc(v)}</button>`).join('');
+  $('cats').querySelectorAll('button').forEach(b => b.onclick = () => { S.catFilter = b.dataset.c; renderTopics(); });
+  const list = c.topics.filter(t => !S.catFilter || t.category === S.catFilter);
+  $('topics').innerHTML = list.map(t => `<button data-k="${esc(t.key)}" class="${S.topicKey === t.key ? 'cur' : ''}">${esc(t.question)}<br><small>${esc(c.categories[t.category] || '')}</small></button>`).join('');
+  $('topics').querySelectorAll('button').forEach(b => b.onclick = () => { closeSheet(); act('topic', b.dataset.k); });
+}
+
+/* ---------- state from the app ---------- */
+function update(st){
+  st = st || {};
+  // connection
+  const online = st.conn === 'online';
+  $('conn').textContent = online ? '● 방송 연결됨' : st.conn === 'offline' ? '● 다시 연결 중' : '● 연결 중';
+  $('conn').classList.toggle('off', !online);
+  // mode
+  setMode(st.mode || 'idle');
+  // driving: touch controls only while stopped or parked (voice is always available)
+  S.stopped = !!st.stopped;
+  ['topicBtn','skipBtn','storyBtn','relayBtn'].forEach(id => $(id).disabled = !S.stopped || !online);
+  $('endBtn').disabled = !S.stopped;
+  $('why').hidden = S.stopped;
+  $('micBtn').disabled = st.mode === 'nav' || st.mode === 'parked';
+  S.eta = typeof st.eta_seconds === 'number' ? st.eta_seconds : null;
+  // what's on air
+  const now = st.now || null, topic = now && now.topic;
+  $('tripLabel').textContent = TRIP[(now && now.commute_type) || st.commute] || 'MY Q';
+  $('program').textContent = `MY Q · ${TRIP[(now && now.commute_type) || st.commute] || '길 위의'} 라디오`;
+  if (topic) {
+    if (topic.key !== S.epKey) { S.epKey = topic.key; S.epStart = Date.now(); }
+    S.topicKey = topic.key;
+    $('question').textContent = topic.question;
+    $('cat').hidden = false; $('cat').textContent = topic.category_label || topic.category;
+  } else {
+    $('question').textContent = online ? '오늘의 이야기를 고르고 있어요' : '방송을 준비하고 있어요';
+    $('cat').hidden = true;
+  }
+  const p = now && now.progress;
+  if (p && p.total) {
+    const pending = !now.content_ready;
+    const n = pending ? Math.max(p.total, p.done + 4) : p.total;
+    $('track').innerHTML = Array.from({length:n}, (_, i) => `<span class="${i < p.done - 1 ? 'done' : i === p.done - 1 ? 'now' : (pending && i >= p.total ? 'pending' : '')}"></span>`).join('');
+    $('chapLabel').innerHTML = p.role ? `<b>${ROLE[p.role] || p.role}</b> · ${Math.min(p.done, n)} / ${pending ? '…' : n}` : '';
+  } else { $('track').innerHTML = ''; $('chapLabel').textContent = ''; }
+  const mc = $('modeChip');
+  if (st.mode === 'nav') { mc.hidden = false; mc.className = 'chip warn'; mc.textContent = '내비 안내 우선'; }
+  else if (now && topic && !now.content_ready) { mc.hidden = false; mc.className = 'chip'; mc.textContent = '이야기 준비 중'; }
+  else if (st.music) { mc.hidden = false; mc.className = 'chip ok'; mc.textContent = '♪ ' + st.music.title; }
+  else mc.hidden = true;
+  // stories: the next thing the driver says becomes a story; stories waiting for approval after parking
+  const storyMode = !!st.story_mode;
+  $('storyChip').hidden = !storyMode;
+  $('face').classList.toggle('storymode', storyMode);
+  if (storyMode && st.mode === 'listening') $('faceTag').textContent = '사연을 듣고 있어요';
+  const held = st.held_stories | 0;
+  $('heldChip').hidden = !held || !!st.approval;
+  $('heldChip').textContent = `💌 주차 후 확인할 사연 ${held}개`;
+  // caption
+  setCaption(st.caption);
+  // sheets the app asks for (approval only after parking; diary only after parking)
+  if (st.approval) {
+    const k = st.approval.text;
+    if (S.approvalKey !== k) { S.approvalKey = k; $('storyText').textContent = st.approval.text; openSheet('storySheet'); }
+  } else if (S.sheet === 'storySheet') { S.approvalKey = null; closeSheet(); }
+  else S.approvalKey = null;
+  if (st.diary && !st.approval) {
+    if (S.diaryKey !== st.diary.url) {
+      S.diaryKey = st.diary.url; $('diaryQr').src = st.diary.qr;
+      // the illustration, when the server sends one; otherwise only the QR
+      $('diaryArt').hidden = !st.diary.image; if (st.diary.image) $('diaryArt').src = st.diary.image;
+      $('diarySheet').classList.toggle('withart', !!st.diary.image);
+      openSheet('diarySheet');
+    }
+  } else if (!st.diary) { if (S.sheet === 'diarySheet') closeSheet(); S.diaryKey = null; }
+  // dev
+  $('devBtn').hidden = !st.debug;
+  if (st.debug) $('devLog').textContent = st.debug.join('\n');
+}
+
+window.HU = {update, topics: c => { S.topics = c; if (S.sheet === 'topicSheet') renderTopics(); }};
+
+/* ---------- browser preview: ?preview cycles through sample states ---------- */
+if (!window.Android && /preview/.test(location.search)) {
+  const base = {conn:'online', commute:'TO_WORK', eta_seconds:1740, debug:['ws.open', 'cmd.recv dj.speak cmd-1a2b', 'ack cmd-1a2b STARTED']};
+  const now = (done, role, ready = true) => ({commute_type:'TO_WORK', content_ready:ready,
+    topic:{key:'relationships', question:'무례한 사람을 꼭 내 편으로 만들어야 할까?', category:'RELATION', category_label:'관계와 소통'},
+    progress:{done, total:9, role}});
+  const qr = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 21"><rect width="21" height="21" fill="#fff"/><path d="M1 1h7v7H1zM13 1h7v7h-7zM1 13h7v7H1z" fill="#000"/><path d="M3 3h3v3H3zM15 3h3v3h-3zM3 15h3v3H3z" fill="#fff"/><path d="M10 2h2v2h-2zM10 6h1v3h-1zM12 10h3v1h-3zM16 12h2v2h-2zM10 14h2v5h-2zM14 16h5v1h-5z" fill="#000"/></svg>');
+  const steps = [
+    {...base, conn:'connecting', mode:'idle', caption:{who:'큐큐', text:'서버에 연결하고 있어요.', kind:'soft'}},
+    {...base, mode:'speaking', now:now(1, 'HOOK', false), caption:{who:'큐큐', kind:'dj', text:'좋은 아침이에요, 큐큐예요. 출근길이 조금 덜 지루하도록 곱씹어 볼 만한 이야기 하나 챙겨 왔어요. 오늘의 질문, 먼저 드릴게요. 무례한 사람을 꼭 내 편으로 만들어야 할까?'}},
+    {...base, mode:'speaking', now:now(3, 'PERSPECTIVE'), caption:{who:'큐큐', kind:'dj', text:'먼저 현실적인 쪽에서 보면, 완전히 피할 수 없는 사람이라면 최소한의 협업 가능성은 회복하는 게 낫습니다. 다만 이것은 그 사람을 좋아하자는 말과는 다릅니다.'}},
+    {...base, mode:'music', music:{title:'샘플 음원 · 아침 01'}, now:now(4, 'PERSPECTIVE'), caption:{who:'♪ 음악', kind:'music', text:'샘플 음원 · 아침 01'}},
+    {...base, mode:'nav', now:now(5, 'PERSPECTIVE'), caption:{who:'큐큐', kind:'soft', text:'안내가 끝나면 이어서 들려드릴게요.'}},
+    {...base, mode:'speaking', held_stories:1, now:now(8, 'PERSPECTIVE'), caption:{who:'💌 사연', kind:'story', text:'이 이야기와 딱 맞는 사연이 있어요. 한 청취자님이 이렇게 보내 주셨어요. 팀장님 말투 때문에 회의만 하면 작아져요.'}},
+    {...base, stopped:true, eta_seconds:300, mode:'listening', story_mode:true, held_stories:1, now:now(8, 'PERSPECTIVE'), caption:{who:'하은', kind:'me', text:'큐큐야, 내 생각 사연으로 남겨 둘래.'}},
+    {...base, stopped:true, eta_seconds:0, mode:'parked', now:now(9, 'OUTRO'), caption:{who:'큐큐', kind:'dj', text:'큐큐~ 오늘 드라이브를 Q Diary로 만들어 봤어요! 오늘 출근도 파이팅입니다!'},
+     approval:{text:'무례한 사람을 꼭 내 편으로 만들어야 할까요? 그럴 필요가 있을까 싶기도 한데, 고민이 되네요. 여러분은 어떻게 생각하세요?'}},
+    {...base, stopped:true, eta_seconds:0, mode:'parked', now:now(9, 'OUTRO'), caption:{who:'큐큐', kind:'soft', text:'오늘도 수고 많으셨어요.'}, diary:{url:'http://127.0.0.1:8765/diaries/demo', qr}},
+  ];
+  HU.topics({categories:{MIND:'마음과 심리', RELATION:'관계와 소통', WORK:'일과 성장'}, topics:[
+    {key:'relationships', category:'RELATION', question:'무례한 사람을 꼭 내 편으로 만들어야 할까?'},
+    {key:'focus', category:'MIND', question:'나는 왜 중요한 순간에 집중하지 못할까?'},
+    {key:'work_off', category:'WORK', question:'나는 왜 퇴근하고도 회사 생각을 멈추지 못할까?'}]});
+  const m = location.search.match(/step=(\d+)/);
+  if (m) update(steps[Math.min(+m[1], steps.length - 1)]);
+  else { let i = 0; update(steps[0]); setInterval(() => update(steps[++i % steps.length]), 4000); }
+}
+})();
+</script>
+</body>
+</html>

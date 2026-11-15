@@ -1,0 +1,15 @@
+{
+  "schema_version":"1.0",
+  "event_id":"evt-example-1",
+  "event_type":"context.updated",
+  "session_id":"trip-example-1",
+  "timestamp":"2026-11-11T08:30:00+09:00",
+  "payload":{
+    "commute_type":"TO_WORK",
+    "vehicle":{"motion_state":"MOVING","speed_kmh":18,"wiper_active":true,"parked_confirmed":false},
+    "navigation":{"road_name":"올림픽대로","road_segment_id":"simulated-segment-1","eta_seconds":1200,"guidance_active":false},
+    "traffic":{"congestion":"SLOW","verified":true},
+    "weather":{"condition":"RAIN","verified":true},
+    "source_mode":"SIMULATED"
+  }
+}

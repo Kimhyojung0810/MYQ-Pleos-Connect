@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ROADPOD</title>
+<style>
+:root{
+  --page:#e9eef6; --page-ink:#1b335c; --page-muted:#5f7393; --page-line:#d3ddeb; --page-panel:#ffffff;
+  --unit:#0a1730; --unit-2:#11234a; --unit-3:#1a3263; --unit-line:#24407a;
+  --ink:#f4f7fc; --ink-2:#b8c6df; --ink-3:#7f93b8;
+  --cream:#fdfbf8; --navy:#142a54; --navy-line:#264b83; --cheek:#ffc2cd;
+  --accent:#ff6b4a; --onair:#ff4d4d; --ok:#5fd3a0; --warn:#f2c45a; --nav:#3d8bff; --me:#9cc2ff;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --page:#0d1220; --page-ink:#dfe7f5; --page-muted:#8c9bb6; --page-line:#25304a; --page-panel:#141b2c;}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--page-ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",sans-serif}
+button{font:inherit;cursor:pointer}
+.stagewrap{max-width:1180px;margin:0 auto;padding:22px 16px 40px}
+
+/* ---------- head unit ---------- */
+.bezel{background:#05070c;border-radius:28px;padding:14px;box-shadow:0 30px 60px -30px rgba(10,23,48,.55)}
+.unit{position:relative;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:radial-gradient(120% 90% at 20% 10%,var(--unit-3) 0%,var(--unit) 55%);color:var(--ink);display:grid;grid-template-rows:auto 1fr auto;container-type:inline-size}
+@media (max-width:760px){.unit{aspect-ratio:auto;min-height:680px}}
+.statusbar{display:flex;align-items:center;gap:14px;padding:1.4cqw 2.4cqw .6cqw;font-size:max(12px,1.2cqw);color:var(--ink-2)}
+.statusbar .time{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.statusbar .right{margin-left:auto;display:flex;gap:14px;align-items:center}
+.statusbar .brand{font-weight:800;letter-spacing:.14em;color:var(--ink)}
+.statusbar .brand em{font-style:normal;color:var(--accent)}
+.statusbar .note{color:var(--accent);opacity:0;transition:opacity .4s}
+.statusbar .note.on{opacity:1;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-2px)}}
+
+.body{display:grid;grid-template-columns:40% 1fr;gap:2.4cqw;padding:.8cqw 2.4cqw 0;min-height:0}
+@media (max-width:760px){.body{grid-template-columns:1fr}}
+
+/* character card */
+.face{position:relative;background:var(--cream);border-radius:2.4cqw;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:250px;transition:background .5s;overflow:hidden}
+.eyes{display:flex;gap:3.2cqw;align-items:center;margin-top:-3cqw}
+.eye{width:8.6cqw;height:11cqw;min-width:62px;min-height:80px;background:#fff;border:3px solid var(--navy-line);border-radius:49%;position:relative;overflow:hidden;transition:all .45s cubic-bezier(.3,1.3,.5,1);box-shadow:inset 0 -4px 6px #c7d9ed55}
+.pupil{position:absolute;width:48%;height:63%;left:26%;top:22%;background:var(--navy);border-radius:45%;transition:transform .6s}
+.pupil:after{content:"";position:absolute;width:36%;height:26%;left:14%;top:12%;background:#fff;border-radius:50%}
+.lid{position:absolute;inset:0;background:var(--cream);transform:translateY(-102%);animation:blink 5.5s infinite}
+.cheek{width:2.4cqw;height:1.2cqw;min-width:18px;min-height:9px;border-radius:50%;background:var(--cheek);opacity:.8;align-self:flex-end;margin-bottom:2cqw;transition:opacity .4s}
+.mouth{width:2cqw;min-width:16px;height:1cqw;min-height:8px;border-bottom:3px solid var(--navy-line);border-radius:0 0 50% 50%;margin-top:1cqw;transition:all .2s}
+.face.speaking .mouth{animation:talk .3s infinite alternate}
+.face.preparing .pupil,.face.thinking .pupil{transform:translate(-14%,-24%)}
+.face.listening .eye{transform:scale(1.06)} .face.listening .pupil{transform:translateY(6%)}
+.face.idle .pupil{animation:look 7s ease-in-out infinite}
+.face.nav{background:#e3e9f4}
+.face.nav .eye{width:5.2cqw;height:6.6cqw;min-width:40px;min-height:50px}
+.face.nav .cheek{opacity:.25}
+@keyframes blink{0%,94%,100%{transform:translateY(-102%)}96.5%{transform:translateY(0)}}
+@keyframes talk{from{height:4px}to{height:1.7cqw;min-height:13px;border-radius:0 0 60% 60%;background:rgba(38,75,131,.12)}}
+@keyframes look{0%,30%,78%,100%{transform:translateX(0)}42%,62%{transform:translateX(-18%)}}
+.viz{position:absolute;left:12%;right:12%;bottom:2.6cqw;height:3.2cqw;min-height:24px;display:flex;align-items:flex-end;justify-content:center;gap:.45cqw}
+.viz i{flex:1;max-width:10px;border-radius:3px;background:var(--navy-line);opacity:.22;height:12%;transition:height .16s ease,opacity .3s}
+.face.speaking .viz i{opacity:.75} .face.listening .viz i{background:var(--accent);opacity:.8}
+.face .tag{position:absolute;top:1.6cqw;left:1.8cqw;font-size:max(11px,1.1cqw);color:#4d6991;display:flex;gap:6px;align-items:center;font-weight:600}
+.face .tag i{width:7px;height:7px;border-radius:50%;background:#9fb0cc}
+.face.speaking .tag i{background:var(--onair);box-shadow:0 0 0 4px rgba(255,77,77,.18)}
+.face.listening .tag i{background:var(--accent);animation:pulse 1s infinite}
+
+/* show column */
+.show{display:flex;flex-direction:column;min-width:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{font-size:max(11px,1.05cqw);padding:.25cqw .9cqw;border-radius:99px;background:rgba(255,255,255,.08);color:var(--ink-2);white-space:nowrap}
+.chip.onair{background:rgba(255,77,77,.16);color:#ffb3a8;font-weight:700;letter-spacing:.08em}
+.chip.onair:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--onair);margin-right:6px;vertical-align:1px;animation:pulse 1.4s infinite}
+.chip.ok{color:var(--ok);background:rgba(95,211,160,.12)} .chip.warn{color:var(--warn);background:rgba(242,196,90,.12)}
+@keyframes pulse{50%{opacity:.35}}
+.program{font-size:max(11px,1.1cqw);color:var(--ink-3);letter-spacing:.06em;margin-top:1cqw}
+.q{font-size:max(20px,2.6cqw);font-weight:800;line-height:1.32;letter-spacing:-.02em;margin:.4cqw 0 0;text-wrap:balance;transition:opacity .4s}
+.timeline{margin-top:1.4cqw}
+.track{display:flex;gap:3px;height:6px}
+.track span{border-radius:3px;background:rgba(255,255,255,.12);position:relative;overflow:hidden;min-width:6px}
+.track span.done{background:rgba(255,107,74,.55)}
+.track span.now i{position:absolute;inset:0;width:0;background:var(--accent);transition:width .3s linear}
+.track span.pending{background:repeating-linear-gradient(90deg,rgba(255,255,255,.14) 0 5px,transparent 5px 9px);animation:slide 1.2s linear infinite;background-size:18px 100%}
+@keyframes slide{to{background-position:18px 0}}
+.tmeta{display:flex;justify-content:space-between;margin-top:.6cqw;font-size:max(11px,1.1cqw);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.tmeta b{color:var(--ink-2);font-weight:600}
+.angles{list-style:none;margin:1.6cqw 0 0;padding:0;display:flex;flex-direction:column;gap:.75cqw;counter-reset:a}
+.angles li{counter-increment:a;display:flex;gap:1cqw;align-items:baseline;font-size:max(13px,1.3cqw);color:var(--ink-3);line-height:1.45;transition:color .3s}
+.angles li:before{content:counter(a);flex:none;width:1.9cqw;height:1.9cqw;min-width:18px;min-height:18px;border-radius:50%;display:grid;place-items:center;font-size:max(10px,1cqw);font-weight:700;background:rgba(255,255,255,.08);color:var(--ink-2)}
+.angles li.on{color:var(--ink)} .angles li.on:before{background:var(--accent);color:#fff}
+.angles li.done{opacity:.5}
+@media (max-width:760px){.angles{display:none}}
+.srcline{margin-top:1cqw;font-size:max(12px,1.15cqw)}
+.srcline button{background:none;border:0;color:var(--ink-2);padding:0;text-decoration:underline;text-underline-offset:3px}
+
+/* caption: one sentence at a time */
+.caption{margin-top:auto;padding:1.4cqw 0 0;min-height:7.4cqw}
+.caption .who{font-size:max(11px,1.05cqw);font-weight:700;color:var(--accent);margin-bottom:.35cqw;letter-spacing:.04em}
+.caption .text{font-size:max(16px,1.85cqw);line-height:1.5;color:var(--ink);font-weight:500;transition:opacity .25s,transform .25s;text-wrap:pretty}
+.caption .text.swap{opacity:0;transform:translateY(4px)}
+.caption.me .who{color:var(--me)} .caption.me .text{color:var(--me)}
+.caption.soft .text{color:var(--ink-2);font-weight:400}
+
+/* dock */
+.dock{display:flex;align-items:center;gap:1.1cqw;padding:1.4cqw 2.4cqw 1.6cqw}
+.dock .btn{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);color:var(--ink);border-radius:1.3cqw;padding:1cqw 1.4cqw;font-size:max(13px,1.25cqw);font-weight:600}
+.dock .btn:hover:not(:disabled){background:rgba(255,255,255,.12)}
+.dock .btn:disabled{opacity:.35;cursor:default}
+.dock .btn.off{color:var(--ink-3)}
+.dock svg{width:1.7cqw;height:1.7cqw;min-width:16px;min-height:16px}
+.mic{margin-left:auto;width:6.6cqw;height:6.6cqw;min-width:58px;min-height:58px;border-radius:50%;border:0;background:var(--accent);color:#fff;display:grid;place-items:center;box-shadow:0 8px 24px -8px rgba(255,107,74,.8)}
+.mic svg{width:2.6cqw;height:2.6cqw;min-width:22px;min-height:22px}
+.mic:disabled{opacity:.35;box-shadow:none}
+.mic.listening{animation:ring 1.1s infinite}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(255,107,74,.6)}100%{box-shadow:0 0 0 22px rgba(255,107,74,0)}}
+
+/* nav banner */
+.navbanner{position:absolute;left:2.4cqw;right:2.4cqw;top:3.8cqw;display:flex;align-items:center;gap:1.6cqw;background:var(--nav);color:#fff;border-radius:1.6cqw;padding:1.2cqw 1.8cqw;transform:translateY(-140%);opacity:0;transition:all .35s cubic-bezier(.3,1.2,.5,1);z-index:5;box-shadow:0 12px 30px -10px rgba(0,0,0,.6)}
+.unit.nav .navbanner{transform:none;opacity:1}
+.navbanner .arrow{font-size:max(26px,3.6cqw);line-height:1}
+.navbanner b{font-size:max(17px,2.1cqw);display:block}
+.navbanner small{opacity:.85;font-size:max(12px,1.2cqw)}
+.navbanner .hush{margin-left:auto;font-size:max(12px,1.15cqw);background:rgba(255,255,255,.18);padding:.4cqw 1cqw;border-radius:99px}
+
+/* sheets */
+.scrim{position:absolute;inset:0;background:rgba(3,8,20,.55);opacity:0;pointer-events:none;transition:opacity .25s;z-index:8}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:78%;background:var(--unit-2);border-top:1px solid var(--unit-line);border-radius:2cqw 2cqw 0 0;transform:translateY(102%);transition:transform .32s cubic-bezier(.3,1.1,.5,1);z-index:9;display:flex;flex-direction:column}
+.sheet.open{transform:none}
+.sheet header{display:flex;align-items:center;padding:1.6cqw 2.4cqw 1cqw;gap:10px}
+.sheet header h3{margin:0;font-size:max(16px,1.75cqw)}
+.sheet header button{margin-left:auto;background:rgba(255,255,255,.08);border:0;color:var(--ink);border-radius:99px;padding:.6cqw 1.4cqw}
+.sheet .content{overflow:auto;padding:0 2.4cqw 2cqw}
+.fact{padding:1.1cqw 0;border-top:1px solid rgba(255,255,255,.07);font-size:max(13px,1.35cqw);line-height:1.6}
+.fact:first-child{border-top:0}
+.fact .src{color:var(--ink-3);font-size:max(12px,1.15cqw);margin-top:.3cqw}
+.fact .src a{color:var(--me);text-decoration:none}
+.empty{color:var(--ink-3);font-size:max(13px,1.3cqw)}
+.cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.2cqw}
+.cats button{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);color:var(--ink-2);border-radius:99px;padding:.5cqw 1.4cqw}
+.cats button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.topics{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1cqw}
+.topics button{text-align:left;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--ink);border-radius:1.2cqw;padding:1.2cqw 1.4cqw;font-size:max(13px,1.35cqw);line-height:1.45}
+.topics button:hover{background:rgba(255,255,255,.11)}
+.topics button.cur{border-color:var(--accent)}
+.sayrow{display:flex;gap:10px}
+.sayrow input{flex:1;min-width:0;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--ink);border-radius:1.2cqw;padding:1.1cqw 1.4cqw;font:inherit;font-size:max(14px,1.4cqw)}
+.primarybtn{background:var(--accent);border:0;color:#fff;border-radius:1.2cqw;padding:1.1cqw 1.8cqw;font-weight:700}
+.ghost{background:rgba(255,255,255,.08);border:0;color:var(--ink);border-radius:1.2cqw;padding:1.1cqw 1.8cqw}
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:1.2cqw}
+.quick button{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:var(--ink-2);border-radius:99px;padding:.6cqw 1.3cqw;font-size:max(12px,1.2cqw)}
+.hint{color:var(--ink-3);font-size:max(12px,1.15cqw);margin-top:1.2cqw}
+.story{background:rgba(255,255,255,.06);border:1px dashed rgba(255,255,255,.25);border-radius:1.2cqw;padding:1.4cqw;font-size:max(14px,1.45cqw);line-height:1.6;margin-bottom:1.2cqw}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+
+/* start screen */
+.welcome{position:absolute;inset:0;z-index:7;display:grid;grid-template-columns:40% 1fr;gap:2.4cqw;padding:5.4cqw 2.4cqw 2.4cqw;background:radial-gradient(120% 90% at 20% 10%,var(--unit-3) 0%,var(--unit) 60%);transition:opacity .6s}
+.welcome.hide{opacity:0;pointer-events:none}
+@media (max-width:760px){.welcome{grid-template-columns:1fr;padding-top:60px}}
+.welcome .face{min-height:0}
+.welcome .col{display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+.welcome .hello{font-size:max(26px,3.6cqw);font-weight:800;letter-spacing:-.02em;line-height:1.25;margin:0}
+.welcome p{color:var(--ink-2);font-size:max(14px,1.45cqw);margin:1cqw 0 2.2cqw;line-height:1.6}
+.go{display:flex;align-items:center;gap:1.6cqw;flex-wrap:wrap}
+.go .primarybtn{font-size:max(16px,1.75cqw);padding:1.4cqw 3cqw;border-radius:99px}
+.go .link{background:none;border:0;color:var(--ink-2);text-decoration:underline;text-underline-offset:3px;padding:0}
+.welcome .meta{margin-top:2.4cqw;font-size:max(11px,1.05cqw);color:var(--ink-3)}
+
+/* ---------- operator panel (outside the car) ---------- */
+.sim{margin-top:18px;background:var(--page-panel);border:1px solid var(--page-line);border-radius:16px;padding:14px 16px}
+.sim h2{font-size:13px;margin:0 0 10px;color:var(--page-muted);font-weight:700;letter-spacing:.03em}
+.sim .row button{border:1px solid var(--page-line);background:var(--page);color:var(--page-ink);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600}
+.sim .row button.main{background:var(--page-ink);color:var(--page);border-color:var(--page-ink)}
+.sim .row button:disabled{opacity:.4;cursor:default}
+.sim .row label{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--page-muted)}
+.sim .status{font-size:12.5px;color:var(--page-muted);margin-top:8px;min-height:18px}
+.sim details{margin-top:8px}
+.sim summary{font-size:12.5px;color:var(--page-muted);cursor:pointer}
+.log{font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--page-muted);max-height:180px;overflow:auto;white-space:pre-wrap;word-break:break-all;margin-top:8px}
+.log b{color:var(--page-ink)}
+.foot{font-size:12px;color:var(--page-muted);margin-top:8px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="stagewrap">
+  <div class="bezel">
+    <div class="unit" id="unit">
+      <div class="statusbar">
+        <span class="time" id="clock">08:12</span>
+        <span id="tripLabel">출근길</span>
+        <span id="eta">도착 08:41 · 18km</span>
+        <span class="right"><span class="note" id="noteIcon">♪</span><span id="conn">● 대기</span><span class="brand">ROAD<em>POD</em></span></span>
+      </div>
+
+      <div class="body">
+        <div class="face idle" id="face">
+          <div class="tag"><i></i><span id="faceTag">큐큐</span></div>
+          <div class="eyes">
+            <i class="cheek"></i>
+            <i class="eye"><b class="pupil"></b><b class="lid"></b></i>
+            <i class="eye"><b class="pupil"></b><b class="lid"></b></i>
+            <i class="cheek"></i>
+          </div>
+          <div class="mouth"></div>
+          <div class="viz" id="viz"></div>
+        </div>
+
+        <div class="show">
+          <div class="chips">
+            <span class="chip onair" id="onair" hidden>ON AIR</span>
+            <span class="chip" id="cat" hidden></span>
+            <span class="chip" id="mode" hidden></span>
+          </div>
+          <div class="program" id="program">ROADPOD · 출근길 라디오</div>
+          <div class="q" id="question">오늘의 질문을 고르고 있어요</div>
+          <div class="timeline">
+            <div class="track" id="track"></div>
+            <div class="tmeta"><span id="chapLabel"></span><span id="clockEp"></span></div>
+          </div>
+          <ol class="angles" id="angles"></ol>
+          <div class="srcline" id="srcline" hidden><button id="srcBtn"></button></div>
+          <div class="caption soft" id="caption">
+            <div class="who" id="who">큐큐</div>
+            <div class="text" id="line">출발하면 방송을 시작할게요.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dock">
+        <button class="btn" id="topicBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>주제</button>
+        <button class="btn" id="skipBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l9 7-9 7V5zM19 5v14"/></svg>다른 얘기</button>
+        <button class="btn" id="storyBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4V5z"/></svg>사연</button>
+        <button class="btn" id="musicBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><span id="musicLabel">음악</span></button>
+        <button class="btn" id="voiceBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4V5zM16 9a4 4 0 010 6"/></svg><span id="voiceLabel">목소리</span></button>
+        <button class="mic" id="micBtn" disabled aria-label="큐큐에게 말하기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button>
+      </div>
+
+      <div class="navbanner" id="navbanner">
+        <span class="arrow">↱</span>
+        <div><b>300m 앞 오른쪽</b><small>올림픽대로 방면 · 잠실대교</small></div>
+        <span class="hush">🔕 안내 중엔 큐큐가 잠시 멈춰요</span>
+      </div>
+
+      <div class="welcome" id="welcome">
+        <div class="face idle">
+          <div class="eyes"><i class="cheek"></i><i class="eye"><b class="pupil"></b><b class="lid"></b></i><i class="eye"><b class="pupil"></b><b class="lid"></b></i><i class="cheek"></i></div>
+          <div class="mouth"></div>
+        </div>
+        <div class="col">
+          <h2 class="hello" id="hello">좋은 아침이에요.</h2>
+          <p id="helloSub">출근길, 큐큐가 곱씹어 볼 만한 이야기 하나 들려드릴게요.<br>듣다가 언제든 말을 걸어도 돼요.</p>
+          <div class="go">
+            <button class="primarybtn" id="startBtn">출발하기</button>
+            <button class="link" id="swapCommute">퇴근길이에요</button>
+            <button class="link" id="pickFirst">주제 고르기</button>
+          </div>
+          <div class="meta" id="engineMeta">엔진 확인 중…</div>
+        </div>
+      </div>
+
+      <div class="scrim" id="scrim"></div>
+      <section class="sheet" id="srcSheet"><header><h3>이 이야기의 근거</h3><button data-close>닫기</button></header><div class="content" id="facts"></div></section>
+      <section class="sheet" id="topicSheet"><header><h3>어떤 이야기를 들을까요?</h3><button data-close>닫기</button></header>
+        <div class="content"><div class="cats" id="cats"></div><div class="topics" id="topics"></div></div></section>
+      <section class="sheet" id="saySheet"><header><h3 id="sayTitle">큐큐에게 말하기</h3><button data-close>닫기</button></header>
+        <div class="content">
+          <form class="sayrow" id="sayForm"><input id="sayInput" autocomplete="off" placeholder="하고 싶은 말을 해 주세요"><button class="primarybtn">보내기</button></form>
+          <div class="quick" id="quick"></div>
+          <p class="hint" id="sayHint">이 브라우저는 음성 인식이 안 돼서 글로 대신 받을게요. 실제 차에서는 말로 해요.</p>
+        </div></section>
+      <section class="sheet" id="storySheet"><header><h3>이렇게 사연을 보낼까요?</h3><button data-close>닫기</button></header>
+        <div class="content"><div class="story" id="storyText"></div>
+          <div class="row"><button class="primarybtn" id="approveBtn">익명으로 공유</button><button class="ghost" id="rejectBtn">보내지 않기</button></div>
+          <p class="hint">운전 중 확인이 어렵다면 주차 후에 다시 물어볼게요.</p></div></section>
+    </div>
+  </div>
+
+  <section class="sim">
+    <h2>차량 시뮬레이터 · 실제 차에서는 Pleos SDK와 내비가 보내는 신호예요</h2>
+    <div class="row">
+      <button class="main" id="autoBtn">▶ 자동 시연</button>
+      <button id="navStart" disabled>🧭 내비 안내 시작</button>
+      <button id="navEnd" disabled>안내 종료</button>
+      <button id="nextLine" disabled>⏭ 지금 멘트 끝내기</button>
+      <button id="restart">↺ 처음으로</button>
+      <label><input type="checkbox" id="fast"> 빠른 재생</label>
+    </div>
+    <div class="status" id="simStatus"></div>
+    <details><summary>차 ↔ 서버 메시지</summary><div class="log" id="log"></div></details>
+    <p class="foot" id="voiceInfo"></p>
+  </section>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const ROLE = {HOOK:'오프닝', FRAME:'도입', PERSPECTIVE:'관점', OUTRO:'마무리'};
+const QUICK = ['저는 꼭 그럴 필요는 없다고 생각해요', '오늘 제 얘기 같네요', '반대쪽 이야기도 듣고 싶어요', '조금 더 쉽게 말해 줘'];
+const PREP = ['오늘 이야기에 쓸 자료를 찾고 있어요', '믿을 만한 출처만 골라내는 중이에요', '큐큐가 원고를 다듬고 있어요', '잠시 음악 들으면서 기다려 주세요'];
+const S = {cfg:null, catalog:null, sid:null, ws:null, started:false, current:null, ep:null, epKey:null, epStart:0,
+           voiceOn:true, musicOn:true, mode:'welcome', nav:false, commute:null, picked:null, story:null, djCount:0, catFilter:null};
+
+/* ---------------- utils ---------------- */
+const uid = () => (crypto.randomUUID && crypto.randomUUID()) || Date.now() + '-' + Math.random().toString(16).slice(2);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function waitFor(fn, ms = 120000){ const t = Date.now(); while(!fn()){ if(Date.now() - t > ms) throw new Error('timeout'); await sleep(250); } }
+function log(dir, text){ const el = $('log'); el.insertAdjacentHTML('beforeend', `<div>${new Date().toLocaleTimeString('ko-KR',{hour12:false})} <b>${dir}</b> ${esc(text)}</div>`); el.scrollTop = el.scrollHeight; }
+function send(type, payload = {}){
+  if(!S.ws || S.ws.readyState !== 1) return;
+  S.ws.send(JSON.stringify({schema_version:'1.0', event_id:uid(), event_type:type, session_id:S.sid, timestamp:new Date().toISOString(), payload}));
+  if(type !== 'command.ack' || payload.status === 'INTERRUPTED') log('차 →', type + (payload.action ? ' · ' + payload.action : '') + (payload.status ? ' · ' + payload.status : '') + (payload.text ? ' · ' + payload.text : ''));
+}
+const hhmm = d => d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',hour12:false});
+const mmss = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+function sentences(t){ return (t.match(/[^.!?…]+[.!?…]*["'”’)]*\s*/g) || [t]).map(x => x.trim()).filter(Boolean); }
+
+/* ---------------- ambient music (generated in the browser: no recording, no copyright) ---------------- */
+const Music = (() => {
+  let ctx, master, timer = null, next = 0, step = 0;
+  const CHORDS = [[60,64,67,71],[57,60,64,67],[53,57,60,64],[55,59,62,64]];   // Cmaj7 · Am7 · Fmaj7 · G6
+  const BAR = 3.6;
+  function init(){
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value = 0;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2200;
+    const conv = ctx.createConvolver(), wet = ctx.createGain(); wet.gain.value = .4;
+    const len = ctx.sampleRate * 3, ir = ctx.createBuffer(2, len, ctx.sampleRate);
+    for(let c = 0; c < 2; c++){ const d = ir.getChannelData(c); for(let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 3); }
+    conv.buffer = ir;
+    master.connect(lp); lp.connect(ctx.destination); lp.connect(conv); conv.connect(wet); wet.connect(ctx.destination);
+  }
+  function note(m, t, dur, vol, type){
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.value = 440 * Math.pow(2, (m - 69) / 12); o.detune.value = (Math.random() - .5) * 10;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .09); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + .1);
+  }
+  function bar(t){
+    const ch = CHORDS[step % 4];
+    ch.forEach(m => note(m, t, BAR + .4, .045, 'sine'));
+    note(ch[0] - 12, t, BAR + .4, .06, 'sine');
+    [ch[0]+12, ch[2]+12, ch[1]+12, ch[3]+12].forEach((m, i) => { if(Math.random() > .15) note(m, t + .45 + i * .9, 1.8, .028, 'triangle'); });
+    step++;
+  }
+  function tick(){ while(next < ctx.currentTime + 1.2){ bar(next); next += BAR; } }
+  return {
+    start(){ if(!ctx) init(); ctx.resume(); if(timer) return; next = ctx.currentTime + .05; timer = setInterval(tick, 300); tick(); },
+    level(v, sec = 1.4){ if(!ctx) return; const g = master.gain, now = ctx.currentTime; g.cancelScheduledValues(now); g.setValueAtTime(g.value, now); g.linearRampToValueAtTime(v, now + sec); },
+    jingle(){
+      if(!ctx) init(); ctx.resume(); const t = ctx.currentTime + .05, j = ctx.createGain(); j.gain.value = .9; j.connect(ctx.destination);
+      [[72,0],[76,.14],[79,.28],[84,.46]].forEach(([m, d]) => { const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'triangle'; o.frequency.value = 440 * Math.pow(2, (m - 69) / 12); g.gain.setValueAtTime(0, t + d);
+        g.gain.linearRampToValueAtTime(.16, t + d + .02); g.gain.exponentialRampToValueAtTime(.0001, t + d + 1.1); o.connect(g); g.connect(j); o.start(t + d); o.stop(t + d + 1.2); });
+    },
+    stop(){ this.level(0, .6); setTimeout(() => { clearInterval(timer); timer = null; }, 800); }
+  };
+})();
+const LEVEL = {welcome:0, preparing:.30, thinking:.16, speaking:.06, idle:.14, listening:.02, nav:0};
+
+/* ---------------- screen state ---------------- */
+let prepTimer = null, prepIdx = 0;
+function setMode(m){
+  S.mode = m;
+  ['idle','speaking','preparing','thinking','listening','nav'].forEach(c => $('face').classList.toggle(c, c === m));
+  $('faceTag').textContent = {idle:'큐큐', speaking:'방송 중', preparing:'이야기 준비 중', thinking:'생각 중', listening:'듣고 있어요', nav:'안내 중 · 잠시 조용히'}[m] || '큐큐';
+  if(S.musicOn) Music.level(LEVEL[m] ?? .1);
+  $('noteIcon').classList.toggle('on', S.musicOn && (LEVEL[m] || 0) > .1);
+  clearInterval(prepTimer);
+  if(m === 'preparing'){ const show = () => caption('큐큐', PREP[prepIdx++ % PREP.length], 'soft'); show(); prepTimer = setInterval(show, 4200); }
+}
+function caption(who, text, kind = ''){
+  const el = $('line'); el.classList.add('swap');
+  setTimeout(() => { $('who').textContent = who; el.textContent = text; $('caption').className = 'caption ' + kind; el.classList.remove('swap'); }, 160);
+}
+// visualizer
+const BARS = 16; $('viz').innerHTML = '<i></i>'.repeat(BARS);
+setInterval(() => {
+  const bars = $('viz').children, t = performance.now() / 1000;
+  for(let i = 0; i < BARS; i++){
+    let h = 10;
+    if(S.mode === 'speaking') h = 20 + Math.random() * 75;
+    else if(S.mode === 'listening') h = 15 + Math.random() * 85;
+    else if(S.musicOn && (LEVEL[S.mode] || 0) > .1) h = 18 + 22 * (1 + Math.sin(t * 1.6 + i * .55)) / 2;
+    bars[i].style.height = h + '%';
+  }
+}, 160);
+function tickClock(){
+  const d = new Date(); $('clock').textContent = hhmm(d); $('eta').textContent = `도착 ${hhmm(new Date(d.getTime() + 29*60000))} · 18km`;
+  if(S.ep && S.epStart){ const total = S.ep.content_ready ? S.ep.segments.reduce((a, s) => a + s.text.length, 0) / 6.2 : 0;
+    $('clockEp').innerHTML = `<b>${mmss((Date.now() - S.epStart) / 1000)}</b>${total ? ' / 약 ' + Math.round(total / 60) + '분' : ''}`; }
+}
+setInterval(tickClock, 1000); tickClock();
+
+/* ---------------- voice ---------------- */
+let koVoice = null;
+function pickVoice(){
+  const vs = (window.speechSynthesis && speechSynthesis.getVoices()) || [];
+  koVoice = vs.find(v => /ko[-_]KR/i.test(v.lang) && /Yuna|유나|Google/i.test(v.name)) || vs.find(v => /ko[-_]KR/i.test(v.lang)) || null;
+  $('voiceInfo').textContent = (koVoice ? `목소리: ${koVoice.name} (브라우저 내장 TTS — 실제 차에서는 앱의 TTS가 재생)` : '한국어 목소리가 없는 브라우저라 자막으로만 진행해요. Chrome·Safari에서는 소리로 들려요.')
+    + ' · 배경음악은 브라우저에서 실시간으로 만든 소리라 저작권 걱정이 없어요.';
+}
+if(window.speechSynthesis){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+
+/* ---------------- playback ---------------- */
+function play(cmd){
+  hardStop();
+  S.djCount++;
+  const text = cmd.payload.text, parts = sentences(text);
+  const me = S.current = {id: cmd.command_id, text, done:false, timers:[]};
+  const fast = $('fast').checked, useVoice = S.voiceOn && koVoice && !fast;
+  const seconds = fast ? Math.max(2, parts.length * .9) : Math.max(3, text.length / 6.2);
+  me.t0 = performance.now(); me.seconds = seconds;
+  $('onair').hidden = false; $('nextLine').disabled = false;
+  setMode('speaking');
+  send('command.ack', {command_id: me.id, status:'STARTED'});
+  me.finish = () => { if(me.done || S.current !== me) return; me.done = true; S.current = null; me.timers.forEach(clearTimeout); clearInterval(me.bar);
+    $('nextLine').disabled = true; setMode(S.ep && !S.ep.content_ready ? 'preparing' : 'idle');
+    send('command.ack', {command_id: me.id, status:'COMPLETED'}); };
+  me.bar = setInterval(() => { const b = document.querySelector('.track span.now i'); if(b) b.style.width = Math.min(100, (performance.now() - me.t0) / (seconds * 10)) + '%'; }, 250);
+  if(useVoice){
+    parts.forEach((p, i) => { const u = new SpeechSynthesisUtterance(p); u.lang = 'ko-KR'; u.voice = koVoice; u.rate = 1.05; u.pitch = 1.08;
+      u.onstart = () => { if(S.current === me) caption('큐큐', p); };
+      if(i === parts.length - 1){ u.onend = me.finish; u.onerror = () => { if(!me.muted) me.finish(); }; }
+      speechSynthesis.speak(u); });
+    me.timers.push(setTimeout(me.finish, (seconds * 1.8 + 6) * 1000));   // a stalled speech engine must not freeze the show
+  } else timedCaptions(me, parts, seconds);
+  refreshEpisode();
+}
+function timedCaptions(me, parts, seconds, from = 0){
+  const total = parts.reduce((a, p) => a + p.length, 0); let at = 0;
+  parts.forEach(p => { const ms = at * 1000; if(ms >= from) me.timers.push(setTimeout(() => { if(S.current === me) caption('큐큐', p); }, ms - from)); at += seconds * p.length / total; });
+  me.timers.push(setTimeout(me.finish, Math.max(300, seconds * 1000 - from)));
+}
+function hardStop(){ if(window.speechSynthesis) speechSynthesis.cancel(); if(S.current){ S.current.timers.forEach(clearTimeout); clearInterval(S.current.bar); } }
+// Barge-in: stop talking now; the server will answer, then pick the cut line back up.
+function interruptLocal(){ const me = S.current; if(!me || me.done) return null; me.muted = true; hardStop(); return me; }
+function reportInterrupted(me){ if(!me || me.done) return; me.done = true; if(S.current === me) S.current = null; send('command.ack', {command_id: me.id, status:'INTERRUPTED'}); $('nextLine').disabled = true; }
+
+/* ---------------- listener talks ---------------- */
+function userSays(text, cut, asStory = false){
+  caption('나', text, 'me'); setMode('thinking');
+  const payload = {text, is_final:true}; if(asStory) payload.intent = 'CREATE_STORY';
+  send('user.utterance', payload);          // first the words, then the cut: the reply gets queued ahead of the replay
+  reportInterrupted(cut);
+}
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+function listen(asStory = false){
+  const cut = interruptLocal(); setMode('listening'); caption('듣고 있어요', '…', 'me');
+  if(!SR){ S.sayCut = cut; S.sayStory = asStory; $('sayTitle').textContent = asStory ? '사연 보내기' : '큐큐에게 말하기';
+    $('sayHint').textContent = asStory ? '익명 초안을 먼저 보여드리고, 승인해야만 다른 청취자에게 전해져요.' : '이 브라우저는 음성 인식이 안 돼서 글로 대신 받을게요. 실제 차에서는 말로 해요.';
+    openSheet('saySheet'); setTimeout(() => $('sayInput').focus(), 300); return; }
+  const rec = new SR(); rec.lang = 'ko-KR'; rec.interimResults = true; let got = false;
+  $('micBtn').classList.add('listening');
+  rec.onresult = ev => { const r = ev.results[ev.results.length - 1]; $('line').textContent = r[0].transcript; if(r.isFinal){ got = true; userSays(r[0].transcript, cut, asStory); } };
+  rec.onend = () => { $('micBtn').classList.remove('listening'); if(!got){ reportInterrupted(cut); setMode('idle'); } };
+  rec.onerror = () => {};
+  rec.start();
+}
+async function fakeListen(text){            // used by the auto demo: looks and flows like speech
+  const cut = interruptLocal(); setMode('listening'); $('micBtn').classList.add('listening'); caption('듣고 있어요', '…', 'me');
+  await sleep(700); let shown = '';
+  for(const ch of text){ shown += ch; $('line').textContent = shown; await sleep(55); }
+  await sleep(400); $('micBtn').classList.remove('listening'); userSays(text, cut);
+}
+
+/* ---------------- sheets ---------------- */
+function openSheet(id){ document.querySelectorAll('.sheet').forEach(s => s.classList.toggle('open', s.id === id)); $('scrim').classList.add('open'); }
+function closeSheets(){ document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open')); $('scrim').classList.remove('open');
+  if(S.sayCut !== undefined && S.mode === 'listening'){ reportInterrupted(S.sayCut); S.sayCut = undefined; setMode('idle'); } }
+$('scrim').onclick = closeSheets; document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeSheets);
+
+/* ---------------- episode ---------------- */
+let poll = null;
+async function refreshEpisode(){
+  if(!S.sid) return;
+  const r = await fetch(`/demo/sessions/${S.sid}/episode`); if(!r.ok) return;
+  const ep = S.ep = await r.json(); if(!ep.topic) return;
+  const epKey = ep.topic.key + ':' + (ep.segments[0] && ep.segments[0].text);
+  if(epKey !== S.epKey){ S.epKey = epKey; S.epStart = Date.now(); }
+  $('question').textContent = ep.topic.question; $('cat').hidden = false; $('cat').textContent = ep.topic.category;
+  const m = ep.content_ready ? ({researched:['근거 기반','ok'], discussion_only:['관점 중심','warn'], catalog:['기본 원고','warn']}[ep.mode] || [ep.mode,'']) : ['준비 중',''];
+  $('mode').hidden = !ep.content_ready; $('mode').textContent = m[0]; $('mode').className = 'chip ' + m[1];
+  const segs = ep.segments, total = segs.reduce((a, s) => a + s.text.length, 0) || 1;
+  $('track').innerHTML = segs.map(s => `<span style="flex:${s.text.length}" class="${s.idx < ep.current_idx ? 'done' : s.idx === ep.current_idx ? 'now' : ''}"><i></i></span>`).join('')
+    + (ep.content_ready ? '' : `<span class="pending" style="flex:${total * 6}"></span>`);
+  const cur = segs.find(s => s.idx === ep.current_idx), persp = segs.filter(s => s.role === 'PERSPECTIVE'), n = ep.topic.angles.length;
+  const pnum = cur && cur.role === 'PERSPECTIVE' ? persp.findIndex(s => s.idx === cur.idx) : -1;
+  const pos = pnum >= 0 ? Math.min(n - 1, Math.floor(pnum * n / persp.length)) : (cur && cur.role === 'OUTRO' ? n : -1);
+  $('chapLabel').textContent = !cur ? '' : cur.role === 'PERSPECTIVE' ? `관점 ${pos + 1} / ${n}` : (ROLE[cur.role] || cur.role);
+  $('angles').innerHTML = ep.topic.angles.map((a, i) => `<li class="${i === pos ? 'on' : i < pos ? 'done' : ''}">${esc(a)}</li>`).join('');
+  $('srcline').hidden = !ep.facts.length;
+  $('srcBtn').textContent = ep.facts.length ? `근거 ${ep.facts.length}건 · ${[...new Set(ep.facts.map(f => f.publisher).filter(Boolean))].slice(0, 2).join(', ')}${ep.facts.length > 2 ? ' 외' : ''}` : '';
+  $('facts').innerHTML = ep.facts.length ? ep.facts.map(f => `<div class="fact">${esc(f.claim)}<div class="src">${esc(f.publisher || '')}${f.published ? ' · ' + f.published.slice(0, 7) : ''} · <a href="${encodeURI(f.url)}" target="_blank" rel="noopener">${esc(f.title || '원문 보기')}</a></div></div>`).join('')
+    : '<p class="empty">이번 이야기는 확인된 자료 없이 관점 중심으로 진행해요.</p>';
+  if(!S.current && !S.nav && S.mode !== 'listening' && S.mode !== 'thinking') setMode(ep.content_ready ? 'idle' : 'preparing');
+  clearTimeout(poll); if(!ep.content_ready) poll = setTimeout(refreshEpisode, 2500);
+}
+
+/* ---------------- topics ---------------- */
+function renderTopics(){
+  const c = S.catalog;
+  $('cats').innerHTML = `<button class="${!S.catFilter ? 'on' : ''}" data-c="">전체</button>` + Object.entries(c.categories).map(([k, v]) => `<button class="${S.catFilter === k ? 'on' : ''}" data-c="${k}">${esc(v)}</button>`).join('');
+  $('cats').querySelectorAll('button').forEach(b => b.onclick = () => { S.catFilter = b.dataset.c || null; renderTopics(); });
+  const list = c.topics.filter(t => !S.catFilter || t.category === S.catFilter);
+  $('topics').innerHTML = `<button data-k="__random">🎲 큐큐에게 맡기기<br><span class="empty">아직 덜 들어본 분야에서 골라요</span></button>`
+    + list.map(t => `<button data-k="${t.key}" class="${S.ep && S.ep.topic && S.ep.topic.key === t.key ? 'cur' : ''}">${esc(t.question)}<br><span class="empty">${esc(c.categories[t.category])}</span></button>`).join('');
+  $('topics').querySelectorAll('button').forEach(b => b.onclick = () => {
+    closeSheets(); const k = b.dataset.k;
+    if(!S.started){ S.picked = k === '__random' ? null : k; start(); return; }
+    const cut = interruptLocal(); setMode('thinking');
+    send('user.action', k === '__random' ? {action:'random_topic'} : {action:'select_topic', topic_key:k}); reportInterrupted(cut);
+  });
+}
+
+/* ---------------- connection ---------------- */
+function setCommute(c){
+  S.commute = c; const morning = c === 'TO_WORK';
+  $('tripLabel').textContent = morning ? '출근길' : '퇴근길'; $('program').textContent = `ROADPOD · ${morning ? '출근길' : '퇴근길'} 라디오`;
+  const h = new Date().getHours();
+  $('hello').textContent = morning ? (h < 11 ? '좋은 아침이에요.' : '안녕하세요.') : (h < 22 ? '오늘 하루 고생 많았어요.' : '늦은 시간까지 수고 많았어요.');
+  $('helloSub').innerHTML = `${morning ? '출근길' : '집에 가는 길'}, 큐큐가 곱씹어 볼 만한 이야기 하나 들려드릴게요.<br>듣다가 언제든 말을 걸어도 돼요.`;
+  $('swapCommute').textContent = morning ? '퇴근길이에요' : '출근길이에요';
+}
+setCommute(new Date().getHours() >= 14 ? 'FROM_WORK' : 'TO_WORK');
+
+async function start(){
+  if(S.started) return; $('startBtn').disabled = true;
+  if(S.musicOn) Music.start(); Music.jingle();
+  const r = await fetch('/api/v1/sessions', {method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer ' + S.cfg.token},
+    body: JSON.stringify({client_id:'browser-demo', commute_type:S.commute})});
+  if(!r.ok){ log('오류', '세션 생성 실패 ' + r.status); $('startBtn').disabled = false; return; }
+  S.sid = (await r.json()).session_id;
+  S.ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/v1/sessions/${S.sid}`, ['roadpod.bearer.' + S.cfg.token]);
+  await new Promise((ok, fail) => {
+    S.ws.onopen = () => {
+      S.started = true; log('연결', S.sid); $('conn').textContent = '● 연결됨'; $('conn').style.color = 'var(--ok)';
+      $('welcome').classList.add('hide');
+      ['topicBtn','skipBtn','storyBtn','micBtn','navStart'].forEach(id => $(id).disabled = false);
+      setMode('thinking'); caption('큐큐', '방송을 여는 중이에요…', 'soft');
+      setTimeout(() => { if(S.picked) send('user.action', {action:'select_topic', topic_key:S.picked}); else send('session.started'); }, 1300);  // let the jingle ring first
+      ok();
+    };
+    S.ws.onerror = fail;
+  });
+  S.ws.onmessage = e => {
+    const m = JSON.parse(e.data);
+    log('← 서버', m.type + (m.code ? ' · ' + m.code : '') + (m.payload && m.payload.text ? ' · ' + m.payload.text.slice(0, 50) + '…' : ''));
+    if(m.type === 'dj.speak') play(m);
+    else if(m.type === 'media.pause'){ reportInterrupted(interruptLocal()); setNav(true); }
+    else if(m.type === 'media.resume') setNav(false);
+    else if(m.type === 'story.preview'){ S.story = m.payload; $('storyText').textContent = m.payload.preview_text; openSheet('storySheet'); setMode('idle'); }
+    else if(m.type === 'protocol.error') log('오류', m.code + (m.detail ? ' · ' + m.detail : ''));
+  };
+  S.ws.onclose = () => { $('conn').textContent = '● 연결 끊김'; $('conn').style.color = 'var(--warn)'; };
+}
+function setNav(on){
+  S.nav = on; $('unit').classList.toggle('nav', on); $('navStart').disabled = on; $('navEnd').disabled = !on;
+  if(on){ setMode('nav'); $('onair').hidden = true; caption('내비게이션', '안내가 끝나면 이어서 들려드릴게요.', 'soft'); }
+  else { $('onair').hidden = false; setMode(S.current ? 'speaking' : 'idle'); }
+}
+
+/* ---------------- controls ---------------- */
+$('startBtn').onclick = () => { S.picked = null; start(); };
+$('swapCommute').onclick = () => setCommute(S.commute === 'TO_WORK' ? 'FROM_WORK' : 'TO_WORK');
+$('pickFirst').onclick = () => { renderTopics(); openSheet('topicSheet'); };
+$('topicBtn').onclick = () => { renderTopics(); openSheet('topicSheet'); };
+$('skipBtn').onclick = () => { const cut = interruptLocal(); setMode('thinking'); send('user.action', {action:'skip_topic'}); reportInterrupted(cut); };
+$('srcBtn').onclick = () => openSheet('srcSheet');
+$('storyBtn').onclick = () => listen(true);
+$('micBtn').onclick = () => listen(false);
+$('quick').innerHTML = QUICK.map(q => `<button type="button">${esc(q)}</button>`).join('');
+$('quick').querySelectorAll('button').forEach(b => b.onclick = () => { $('sayInput').value = b.textContent; $('sayForm').requestSubmit(); });
+$('sayForm').onsubmit = e => {
+  e.preventDefault(); const t = $('sayInput').value.trim(); if(!t) return;
+  const cut = S.sayCut, story = S.sayStory; S.sayCut = undefined; $('sayInput').value = '';
+  document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open')); $('scrim').classList.remove('open');
+  userSays(t, cut, story);
+};
+$('musicBtn').onclick = () => { S.musicOn = !S.musicOn; $('musicBtn').classList.toggle('off', !S.musicOn);
+  if(S.musicOn){ if(S.started) Music.start(); setMode(S.mode); } else { Music.level(0, .5); $('noteIcon').classList.remove('on'); } };
+$('voiceBtn').onclick = () => {
+  S.voiceOn = !S.voiceOn; $('voiceBtn').classList.toggle('off', !S.voiceOn);
+  if(!S.voiceOn && S.current && !S.current.done){   // muting mid-line: finish the line as subtitles
+    const me = S.current; me.muted = true; speechSynthesis.cancel(); me.timers.forEach(clearTimeout); me.timers = [];
+    const elapsed = performance.now() - me.t0; timedCaptions(me, sentences(me.text), me.seconds, elapsed); me.muted = false;
+  }
+};
+async function decideStory(approved){
+  if(!S.story) return; closeSheets();
+  await fetch(`/api/v1/stories/${S.story.story_id}/approval`, {method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer ' + S.cfg.token},
+    body: JSON.stringify({session_id:S.sid, approved})});
+  log('사연', approved ? '공유 승인 (검수 후 발행 예정)' : '보내지 않기'); S.story = null;
+  caption('큐큐', approved ? '고마워요. 검수를 마치면 다른 청취자에게 익명으로 전할게요.' : '알겠어요. 사연은 보내지 않을게요.', 'soft');
+}
+$('approveBtn').onclick = () => decideStory(true);
+$('rejectBtn').onclick = () => decideStory(false);
+$('navStart').onclick = () => send('navigation.guidance_started');
+$('navEnd').onclick = () => send('navigation.guidance_ended');
+$('nextLine').onclick = () => { if(S.current){ speechSynthesis.cancel(); S.current.finish(); } };
+$('restart').onclick = () => location.reload();
+window.addEventListener('beforeunload', () => { if(S.ws && S.ws.readyState === 1) send('session.ended'); });
+
+/* ---------------- auto demo for presenting ---------------- */
+function status(t){ $('simStatus').textContent = t; }
+$('autoBtn').onclick = async () => {
+  $('autoBtn').disabled = true;
+  try {
+    status('① 출발 — 큐큐가 방송을 열어요'); await start();
+    await waitFor(() => S.djCount >= 1, 30000);
+    status('② 오늘의 질문과 도입 — 처음 듣는 주제면 자료를 찾는 동안 음악이 흘러요');
+    await waitFor(() => S.ep && S.ep.content_ready && S.ep.current_idx >= 2 && S.current, 240000);
+    await sleep(5000);
+    status('③ 청취자가 말을 걸어요 — 큐큐는 하던 말을 멈추고 바로 대답해요');
+    const before = S.djCount; await fakeListen('저는 꼭 그럴 필요는 없다고 생각해요');
+    await waitFor(() => S.djCount >= before + 2, 60000);     // the reply, then the cut line picked back up
+    status('④ 대답 뒤에는 끊긴 이야기로 자연스럽게 돌아와요'); await sleep(7000);
+    status('⑤ 내비 안내가 시작되면 큐큐와 음악이 바로 멈춰요'); send('navigation.guidance_started'); await sleep(6500);
+    status('⑥ 안내가 끝나면 끊긴 부분부터 다시 이어가요'); send('navigation.guidance_ended'); await sleep(4000);
+    status('자동 시연 끝 · 방송은 계속 이어져요. 🎙 버튼으로 직접 말을 걸어 보세요.');
+  } catch(e){ status('자동 시연을 멈췄어요: ' + e.message); }
+  $('autoBtn').disabled = false;
+};
+
+(async () => {
+  try {
+    S.cfg = await (await fetch('/demo/config')).json();
+    S.catalog = await (await fetch('/demo/topics')).json();
+    $('engineMeta').textContent = S.cfg.live ? `실제 GPT 방송 · 자료 조사 ${S.cfg.research_model} · 원고 ${S.cfg.writer_model}` : 'Mock 모드 · GPT 비용 없이 기본 원고로 방송해요';
+  } catch(e){ $('engineMeta').textContent = '서버에 연결할 수 없어요'; }
+})();
+</script>
+</body>
+</html>

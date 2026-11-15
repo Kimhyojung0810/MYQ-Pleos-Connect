@@ -1,0 +1,21 @@
+.gradle/
+build/
+app/build/
+local.properties
+*.iml
+.idea/
+captures/
+.kotlin/
+
+# never commit secrets or local data
+.env
+**/.env
+!server/.env.example
+*.sqlite
+*.sqlite-journal
+**/tts_cache/
+**/.venv/
+__pycache__/
+.omc/
+**/.omc/
+.DS_Store

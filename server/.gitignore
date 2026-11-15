@@ -1,0 +1,28 @@
+# Secrets: real keys and tokens live only in .env
+.env
+.env.*
+!.env.example
+
+# Local backups (contain a copy of .env)
+.backup-*/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Databases: listening memory, stories, diaries, demo caches
+*.sqlite
+*.sqlite-journal
+*.db
+
+# Generated output
+demo/output/
+diary_images/
+
+# OS
+.DS_Store
+
+# 큐큐 voice files made by the server (OpenAI / Fish TTS) and the Fish usage counter
+tts_cache/

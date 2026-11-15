@@ -1,0 +1,9 @@
+{
+  "schema_version":"1.0",
+  "command_id":"cmd-example-1",
+  "session_id":"trip-example-1",
+  "type":"dj.speak",
+  "issued_at":"2026-11-11T00:30:05+00:00",
+  "expires_at":"2026-11-11T00:30:35+00:00",
+  "payload":{"text":"오늘은 이런 질문을 던져볼까요? 무례한 사람을 꼭 내 편으로 만들어야 할까요?","voice_style":"WARM","interrupt_policy":"DROP_IF_NAV"}
+}

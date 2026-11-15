@@ -1,0 +1,15 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://roadpod.example/schemas/episode-context.v1.1.json",
+  "title":"ROADPOD Episode Context (server internal / optional UI metadata)",
+  "type":"object","additionalProperties":false,
+  "required":["episode_id","topic_key","segment_index","segment_role"],
+  "properties":{
+    "episode_id":{"type":"string","minLength":1},
+    "topic_key":{"type":"string","minLength":1},
+    "segment_index":{"type":"integer","minimum":0},
+    "segment_role":{"enum":["HOOK","FRAME","PERSPECTIVE","STORY_SLOT","OUTRO"]},
+    "resume_after_interruption":{"type":"boolean","default":true},
+    "source_refs":{"type":"array","items":{"type":"string"},"default":[]}
+  }
+}

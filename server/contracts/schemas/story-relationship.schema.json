@@ -1,0 +1,15 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://roadpod.example/schemas/story-relationship.v1.1.json",
+  "title":"ROADPOD story relation server-side schema",
+  "type":"object","additionalProperties":false,
+  "required":["story_id","episode_id","relation_type","publication_status"],
+  "properties":{
+    "story_id":{"type":"string"},
+    "episode_id":{"type":["string","null"]},
+    "parent_story_id":{"type":["string","null"]},
+    "relation_type":{"enum":["INDEPENDENT","EMPATHY","COUNTERPOINT","FOLLOW_UP"]},
+    "publication_status":{"enum":["DRAFT","APPROVED","PUBLISHED","BLOCKED","REJECTED","REVOKED"]},
+    "topic_candidate_id":{"type":["string","null"]}
+  }
+}

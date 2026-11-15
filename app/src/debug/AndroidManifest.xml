@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- adb-driven scenario simulator (debug, mock, and the self-contained release).
+             DUMP is held only by the adb shell and the system, so other apps on the device cannot fake
+             vehicle signals or speech through it. -->
+        <receiver
+            android:name=".debug.DebugReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP" />
+    </application>
+</manifest>

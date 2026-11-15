@@ -1,0 +1,315 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://roadpod.example/schemas/broadcast-command.v1.json",
+  "title": "ROADPOD broadcast command v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "command_id",
+    "session_id",
+    "type",
+    "issued_at",
+    "expires_at",
+    "payload"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "command_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "enum": [
+        "dj.speak",
+        "media.pause",
+        "media.resume",
+        "story.preview",
+        "story.incoming",
+        "diary.ready",
+        "ui.state",
+        "music.play"
+      ]
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "dj.speak"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "text",
+              "voice_style",
+              "interrupt_policy"
+            ],
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "voice_style": {
+                "enum": [
+                  "WARM",
+                  "BRIGHT",
+                  "CALM"
+                ]
+              },
+              "interrupt_policy": {
+                "enum": [
+                  "DEFER_IF_NAV",
+                  "DROP_IF_NAV"
+                ]
+              },
+              "audio_url": {
+                "type": "string",
+                "description": "Optional mp3 of this line made by the server (OpenAI TTS). Missing or unplayable: speak text with the car's own TTS."
+              },
+              "listen_after": {
+                "type": "boolean",
+                "description": "The line asks the driver something; the car opens the microphone when it ends."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "story.preview"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "story_id",
+              "preview_text",
+              "requires_explicit_approval"
+            ],
+            "properties": {
+              "story_id": {
+                "type": "string"
+              },
+              "preview_text": {
+                "type": "string"
+              },
+              "requires_explicit_approval": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "story.incoming"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "story_id",
+              "text"
+            ],
+            "properties": {
+              "story_id": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "audio_url": {
+                "type": "string",
+                "description": "Optional mp3 of this line made by the server (OpenAI TTS). Missing or unplayable: speak text with the car's own TTS."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "diary.ready"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "diary_id",
+              "view_url"
+            ],
+            "properties": {
+              "diary_id": {
+                "type": "string"
+              },
+              "view_url": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "ui.state"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "state"
+            ],
+            "properties": {
+              "state": {
+                "enum": [
+                  "IDLE",
+                  "LISTENING",
+                  "THINKING",
+                  "SPEAKING",
+                  "NAV_SUSPENDED",
+                  "PARKED"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "media.pause"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "media.resume"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "music.play"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "track_id",
+              "title",
+              "url",
+              "duration_seconds"
+            ],
+            "properties": {
+              "track_id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "artist": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "duration_seconds": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "license": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

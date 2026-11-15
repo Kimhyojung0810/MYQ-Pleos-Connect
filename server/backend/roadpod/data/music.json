@@ -1,0 +1,17 @@
+{
+  "_note": "샘플 슬롯입니다. 무료 라이선스 음원(예: Pixabay Music, CC0)을 data/music/ 에 넣고 title·artist·file·duration_seconds·license·source_url 을 실제 값으로 바꾸세요. 파일이 없어도 방송 흐름(명령)은 그대로 나갑니다.",
+  "tracks": [
+    {"id": "am-01", "title": "샘플 음원 · 아침 01", "artist": "", "file": "am-01.mp3", "duration_seconds": 150,
+     "commute_fit": {"TO_WORK": 1.0, "FROM_WORK": 0.2}, "license": "TBD", "source_url": ""},
+    {"id": "am-02", "title": "샘플 음원 · 아침 02", "artist": "", "file": "am-02.mp3", "duration_seconds": 140,
+     "commute_fit": {"TO_WORK": 1.0, "FROM_WORK": 0.2}, "license": "TBD", "source_url": ""},
+    {"id": "am-03", "title": "샘플 음원 · 아침 03", "artist": "", "file": "am-03.mp3", "duration_seconds": 160,
+     "commute_fit": {"TO_WORK": 0.9, "FROM_WORK": 0.4}, "license": "TBD", "source_url": ""},
+    {"id": "pm-01", "title": "샘플 음원 · 저녁 01", "artist": "", "file": "pm-01.mp3", "duration_seconds": 170,
+     "commute_fit": {"TO_WORK": 0.2, "FROM_WORK": 1.0}, "license": "TBD", "source_url": ""},
+    {"id": "pm-02", "title": "샘플 음원 · 저녁 02", "artist": "", "file": "pm-02.mp3", "duration_seconds": 180,
+     "commute_fit": {"TO_WORK": 0.2, "FROM_WORK": 1.0}, "license": "TBD", "source_url": ""},
+    {"id": "pm-03", "title": "샘플 음원 · 저녁 03", "artist": "", "file": "pm-03.mp3", "duration_seconds": 165,
+     "commute_fit": {"TO_WORK": 0.4, "FROM_WORK": 0.9}, "license": "TBD", "source_url": ""}
+  ]
+}

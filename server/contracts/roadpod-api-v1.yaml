@@ -1,0 +1,144 @@
+openapi: 3.1.0
+info:
+  title: ROADPOD Integration Contract
+  version: 1.0.0
+  description: |
+    Contract owned jointly by app and backend. Only /health and /sessions
+    are implemented by the accompanying mock server; story/note/diary paths
+    below are future integration targets, not claims of implementation.
+servers:
+  - url: http://127.0.0.1:8765/api/v1
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      summary: Health check (mock implemented)
+      security: []
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, schema_version]
+                properties:
+                  status: {type: string, const: ok}
+                  schema_version: {type: string, const: '1.0'}
+  /sessions:
+    post:
+      summary: Start a trip session (mock implemented)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionStart'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionCreated'
+        '401': {description: Unauthorized}
+  /stories/{story_id}/approval:
+    post:
+      summary: Explicit approval or rejection of a preview (future implementation)
+      parameters:
+        - name: story_id
+          in: path
+          required: true
+          schema: {type: string}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [session_id, approved]
+              properties:
+                session_id: {type: string}
+                approved: {type: boolean}
+      responses:
+        '200': {description: Approval state saved}
+        '403': {description: Session not authorized to approve}
+  /notes:
+    post:
+      summary: Create a consented song note (future implementation)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [session_id, music_track_id, road_segment_id, share_approved]
+              properties:
+                session_id: {type: string}
+                music_track_id: {type: string}
+                road_segment_id: {type: string}
+                share_approved: {type: boolean, const: true}
+                reason: {type: [string, 'null'], maxLength: 150}
+      responses:
+        '201': {description: Note accepted after moderation}
+  /diaries/{diary_id}:
+    get:
+      summary: Read a private parking diary (future implementation)
+      parameters:
+        - name: diary_id
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200': {description: Authorized diary payload}
+        '403': {description: Forbidden}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Local demo token only. Production requires short-lived auth and session ownership checks.
+  schemas:
+    SessionStart:
+      type: object
+      additionalProperties: false
+      required: [client_id, commute_type]
+      properties:
+        client_id: {type: string, minLength: 1}
+        commute_type: {type: string, enum: [TO_WORK, FROM_WORK, OTHER, UNKNOWN]}
+    SessionCreated:
+      type: object
+      additionalProperties: false
+      required: [schema_version, session_id, ws_path]
+      properties:
+        schema_version: {type: string, const: '1.0'}
+        session_id: {type: string}
+        ws_path: {type: string, description: 'Relative /ws/v1/sessions/{session_id}'}
+x-websocket-contract:
+  path: /ws/v1/sessions/{session_id}
+  auth: 'Authorization: Bearer <token> header; never URL query token'
+  client_to_server:
+    - session.started
+    - context.updated
+    - user.utterance
+    - user.action
+    - navigation.guidance_started
+    - navigation.guidance_ended
+    - command.ack
+    - vehicle.parked
+    - session.ended
+  server_to_client:
+    - dj.speak
+    - media.pause
+    - media.resume
+    - story.preview
+    - story.incoming
+    - diary.ready
+    - ui.state
+  event_envelope_required: [schema_version, event_id, event_type, session_id, timestamp, payload]
+  command_envelope_required: [schema_version, command_id, session_id, type, issued_at, expires_at, payload]
+  command_ack_payload_required: [command_id, status]
+  command_ack_statuses: [RECEIVED, STARTED, COMPLETED, FAILED, INTERRUPTED]

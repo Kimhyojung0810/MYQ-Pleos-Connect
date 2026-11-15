@@ -1,0 +1,601 @@
+{
+ "version": "2026-11-11",
+ "categories": {
+  "MIND": "마음과 심리",
+  "RELATION": "관계와 소통",
+  "WORK": "일과 성장",
+  "CULTURE": "책과 문화",
+  "SOCIETY": "시사와 사회"
+ },
+ "topics": [
+  {
+   "key": "focus",
+   "category": "MIND",
+   "question": "나는 왜 중요한 순간에 집중하지 못할까?",
+   "summary": "주의를 빼앗는 환경과 작은 습관을 돌아보는 이야기예요.",
+   "angles": [
+    "집중력은 의지의 문제라는 관점",
+    "환경과 알림 설계가 집중을 좌우한다는 관점",
+    "집중이 안 되는 순간은 몸과 마음이 보내는 신호라는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.9,
+    "FROM_WORK": 0.6
+   },
+   "min_minutes": 5,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "주의력 분산, 멀티태스킹, 스마트폰 알림과 집중에 관한 연구"
+  },
+  {
+   "key": "anxiety",
+   "category": "MIND",
+   "question": "불안은 꼭 없애야 하는 감정일까?",
+   "summary": "불안을 적으로만 보지 않고, 불안이 하는 일을 다시 생각해 봐요.",
+   "angles": [
+    "불안은 줄이고 관리해야 할 대상이라는 관점",
+    "불안은 대비하게 만드는 신호라는 관점",
+    "불안과 함께 살아가는 법을 배우자는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.6,
+    "FROM_WORK": 0.8
+   },
+   "min_minutes": 6,
+   "fresh_sources": false,
+   "sensitivity": "careful",
+   "search_hint": "불안의 기능, 걱정과 대비 행동, 감정 수용에 관한 심리학 자료"
+  },
+  {
+   "key": "self_esteem",
+   "category": "MIND",
+   "question": "자존감은 높을수록 좋은 걸까?",
+   "summary": "자존감이라는 말에 담긴 기대와 오해를 짚어 봐요.",
+   "angles": [
+    "높은 자존감이 삶의 만족을 키운다는 관점",
+    "자존감보다 자기 연민이 더 중요하다는 관점",
+    "자존감 담론이 개인에게 짐을 지운다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.6,
+    "FROM_WORK": 0.8
+   },
+   "min_minutes": 6,
+   "fresh_sources": false,
+   "sensitivity": "careful",
+   "search_hint": "자존감과 자기 연민(self-compassion) 비교 연구"
+  },
+  {
+   "key": "comparison",
+   "category": "MIND",
+   "question": "남과 비교하지 않는 게 정말 가능할까?",
+   "summary": "비교하는 마음을 없애기보다 다루는 법을 생각해 봐요.",
+   "angles": [
+    "비교는 성장의 동력이 될 수 있다는 관점",
+    "SNS 시대의 비교는 다르다는 관점",
+    "비교의 기준을 나에게 두자는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.7,
+    "FROM_WORK": 0.8
+   },
+   "min_minutes": 5,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "사회 비교 이론, 상향 비교와 SNS 사용에 관한 연구"
+  },
+  {
+   "key": "loneliness",
+   "category": "MIND",
+   "question": "외로움은 혼자 있어서 생기는 걸까?",
+   "summary": "사람들 사이에서도 외로울 수 있는 이유를 함께 생각해 봐요.",
+   "angles": [
+    "외로움은 관계의 양보다 질의 문제라는 관점",
+    "혼자 있는 시간은 오히려 필요하다는 관점",
+    "외로움은 개인이 아니라 사회가 함께 다뤄야 한다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.4,
+    "FROM_WORK": 0.9
+   },
+   "min_minutes": 6,
+   "fresh_sources": false,
+   "sensitivity": "careful",
+   "search_hint": "외로움과 고립의 차이, 외로움에 관한 연구와 정책 사례"
+  },
+  {
+   "key": "rest",
+   "category": "MIND",
+   "question": "쉬어도 쉰 것 같지 않은 이유는 뭘까?",
+   "summary": "몸은 쉬는데 마음은 쉬지 못하는 시간에 대한 이야기예요.",
+   "angles": [
+    "진짜 휴식은 아무것도 안 하는 것이라는 관점",
+    "몰입할 거리가 있어야 회복된다는 관점",
+    "휴식에도 연습이 필요하다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.4,
+    "FROM_WORK": 1.0
+   },
+   "min_minutes": 5,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "회복 경험, 심리적 분리(detachment), 휴식의 질에 관한 연구"
+  },
+  {
+   "key": "relationships",
+   "category": "RELATION",
+   "question": "무례한 사람을 꼭 내 편으로 만들어야 할까?",
+   "summary": "상대와 관계를 유지하는 일과 내 경계 지키기 사이에서 무엇이 중요한지 생각해 봐요.",
+   "angles": [
+    "관계를 끊을 수 없다면 내 편으로 만드는 게 현실적이라는 관점",
+    "모두에게 인정받을 필요는 없다는 관점",
+    "거리를 두며 협력하는 중간 지점이 있다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.8,
+    "FROM_WORK": 0.8
+   },
+   "min_minutes": 6,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "직장 내 무례함(incivility), 경계 설정, 어려운 사람과 협업하기"
+  },
+  {
+   "key": "communication",
+   "category": "RELATION",
+   "question": "내 생각을 있는 그대로 전하는 방법",
+   "summary": "내 말이 오해 없이 전달되려면 어떤 대화가 필요할까요?",
+   "angles": [
+    "솔직함이 가장 좋은 전략이라는 관점",
+    "말의 내용보다 방식이 중요하다는 관점",
+    "상대가 들을 준비가 됐는지가 먼저라는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.8,
+    "FROM_WORK": 0.7
+   },
+   "min_minutes": 5,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "비폭력 대화, 자기주장 커뮤니케이션, 오해가 생기는 대화 연구"
+  },
+  {
+   "key": "endurance",
+   "category": "RELATION",
+   "question": "좋은 관계를 유지하려면 어디까지 참아야 할까?",
+   "summary": "참는 것과 맞춰 가는 것의 차이를 생각해 봐요.",
+   "angles": [
+    "관계에는 어느 정도의 인내가 필요하다는 관점",
+    "참기만 하는 관계는 오래가지 못한다는 관점",
+    "참지 말고 말하되 타이밍을 고르자는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.5,
+    "FROM_WORK": 0.9
+   },
+   "min_minutes": 6,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "관계 갈등 회피와 표현, 감정 억제와 관계 만족도 연구"
+  },
+  {
+   "key": "saying_no",
+   "category": "RELATION",
+   "question": "거절을 잘하는 사람은 뭐가 다를까?",
+   "summary": "미안함 없이, 관계를 해치지 않고 거절하는 법을 생각해 봐요.",
+   "angles": [
+    "거절은 관계를 지키는 기술이라는 관점",
+    "거절이 어려운 건 성격이 아니라 상황 때문이라는 관점",
+    "거절에도 대안을 함께 주자는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.8,
+    "FROM_WORK": 0.7
+   },
+   "min_minutes": 5,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "거절하기 어려운 심리, 자기주장 훈련, 요청 거절 연구"
+  },
+  {
+   "key": "workplace_conflict",
+   "category": "RELATION",
+   "question": "회사에서 갈등을 피하는 게 최선일까?",
+   "summary": "갈등이 없는 팀과 건강한 팀은 같은 말일까요?",
+   "angles": [
+    "갈등을 줄이는 게 팀을 지키는 길이라는 관점",
+    "건강한 갈등이 더 나은 결정을 만든다는 관점",
+    "갈등의 종류에 따라 다르게 다뤄야 한다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.9,
+    "FROM_WORK": 0.6
+   },
+   "min_minutes": 6,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "업무 갈등과 관계 갈등, 심리적 안전감 연구"
+  },
+  {
+   "key": "persuasion",
+   "category": "RELATION",
+   "question": "설득은 논리일까, 관계일까?",
+   "summary": "같은 말이 누구에게서 나오느냐에 따라 달라지는 이유를 생각해 봐요.",
+   "angles": [
+    "좋은 근거가 결국 사람을 움직인다는 관점",
+    "신뢰가 먼저고 논리는 그다음이라는 관점",
+    "설득보다 함께 결론을 찾는 게 낫다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.8,
+    "FROM_WORK": 0.6
+   },
+   "min_minutes": 6,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "설득 심리학, 신뢰와 설득, 태도 변화 연구"
+  },
+  {
+   "key": "procrastination",
+   "category": "WORK",
+   "question": "중요한 결정 앞에서 왜 자꾸 미루게 될까?",
+   "summary": "게을러서가 아니라 다른 이유로 미루는 순간들을 살펴봐요.",
+   "angles": [
+    "미루기는 시간 관리의 문제라는 관점",
+    "미루기는 감정을 피하는 방식이라는 관점",
+    "완벽주의가 결정을 늦춘다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.9,
+    "FROM_WORK": 0.6
+   },
+   "min_minutes": 5,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "미루기와 감정 조절, 결정 회피, 완벽주의 연구"
+  },
+  {
+   "key": "career_doubt",
+   "category": "WORK",
+   "question": "지금 하는 일이 맞는지 확신이 없을 때",
+   "summary": "확신이 없는 상태로도 앞으로 나아가는 방법을 생각해 봐요.",
+   "angles": [
+    "확신은 경험이 쌓여야 생긴다는 관점",
+    "맞지 않는 신호는 빨리 알아차려야 한다는 관점",
+    "일 하나로 나를 다 설명할 필요는 없다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.7,
+    "FROM_WORK": 0.8
+   },
+   "min_minutes": 6,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "커리어 정체감, 직무 만족, 잡 크래프팅 연구"
+  },
+  {
+   "key": "busy_productive",
+   "category": "WORK",
+   "question": "바쁜 하루가 생산적인 하루일까?",
+   "summary": "바쁨과 성과가 왜 자주 헷갈리는지 이야기해 봐요.",
+   "angles": [
+    "바쁨은 성실함의 증거라는 관점",
+    "바쁨은 우선순위가 없다는 신호라는 관점",
+    "생산성의 기준을 다시 정해야 한다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 1.0,
+    "FROM_WORK": 0.6
+   },
+   "min_minutes": 5,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "바쁨의 문화, 딥워크, 회의와 생산성 연구"
+  },
+  {
+   "key": "feedback",
+   "category": "WORK",
+   "question": "좋은 피드백은 무엇이 다를까?",
+   "summary": "듣기 싫은 말이 도움이 되는 말로 바뀌는 조건을 생각해 봐요.",
+   "angles": [
+    "솔직한 피드백이 성장을 만든다는 관점",
+    "관계와 신뢰가 없으면 피드백은 상처가 된다는 관점",
+    "피드백을 받는 쪽의 기술도 중요하다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.9,
+    "FROM_WORK": 0.6
+   },
+   "min_minutes": 6,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "효과적인 피드백 연구, 피드백 수용, 심리적 안전감"
+  },
+  {
+   "key": "burnout",
+   "category": "WORK",
+   "question": "번아웃은 열심히 한 사람에게만 올까?",
+   "summary": "번아웃을 개인의 체력 문제로만 볼 수 있을지 생각해 봐요.",
+   "angles": [
+    "번아웃은 과로의 결과라는 관점",
+    "번아웃은 통제감과 보상의 문제라는 관점",
+    "조직과 개인이 함께 책임져야 한다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.6,
+    "FROM_WORK": 0.9
+   },
+   "min_minutes": 6,
+   "fresh_sources": false,
+   "sensitivity": "careful",
+   "search_hint": "번아웃 정의(WHO), 번아웃 요인 연구"
+  },
+  {
+   "key": "heavy_monday",
+   "category": "WORK",
+   "question": "출근길 마음이 무거운 날, 무엇이 나를 붙잡을까?",
+   "summary": "가기 싫은 날에도 하루를 시작하게 하는 것들에 대한 이야기예요.",
+   "angles": [
+    "의미가 동기를 만든다는 관점",
+    "작은 루틴이 무거운 마음을 이긴다는 관점",
+    "무거운 마음을 억지로 바꾸지 않아도 된다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 1.0,
+    "FROM_WORK": 0.2
+   },
+   "min_minutes": 5,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "일의 의미, 아침 루틴, 직무 동기 연구"
+  },
+  {
+   "key": "books",
+   "category": "CULTURE",
+   "question": "좋은 관계를 다룬 책에서 발견한 질문",
+   "summary": "책에서 던지는 질문을 일상 경험과 연결해 봅니다.",
+   "angles": [
+    "관계는 기술로 배울 수 있다는 관점",
+    "관계는 기술보다 태도의 문제라는 관점",
+    "책 속 조언이 현실에서 통하지 않는 이유"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.6,
+    "FROM_WORK": 0.9
+   },
+   "min_minutes": 6,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "관계를 다룬 대표적인 교양서와 그 핵심 주장"
+  },
+  {
+   "key": "happiness",
+   "category": "CULTURE",
+   "question": "행복은 목표일까, 따라오는 걸까?",
+   "summary": "행복을 쫓을수록 멀어진다는 말을 철학과 일상으로 따져 봐요.",
+   "angles": [
+    "행복은 의식적으로 추구해야 한다는 관점",
+    "행복은 의미 있는 활동의 부산물이라는 관점",
+    "행복보다 만족이나 평온이 더 현실적이라는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.6,
+    "FROM_WORK": 0.9
+   },
+   "min_minutes": 6,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "행복의 역설, 쾌락주의와 에우다이모니아, 행복 연구"
+  },
+  {
+   "key": "nostalgia",
+   "category": "CULTURE",
+   "question": "우리는 왜 지난 시절을 아름답게 기억할까?",
+   "summary": "추억이 미화되는 이유와 그 힘에 대한 이야기예요.",
+   "angles": [
+    "향수는 현재를 버티게 하는 힘이라는 관점",
+    "기억은 늘 편집된다는 관점",
+    "과거를 그리워하는 건 현재에 대한 질문이라는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.5,
+    "FROM_WORK": 0.9
+   },
+   "min_minutes": 5,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "향수(nostalgia)의 심리적 기능, 장밋빛 회고 연구"
+  },
+  {
+   "key": "long_reading",
+   "category": "CULTURE",
+   "question": "긴 글을 끝까지 읽기 어려워진 이유",
+   "summary": "짧은 콘텐츠의 시대에 긴 호흡이 갖는 의미를 생각해 봐요.",
+   "angles": [
+    "집중력이 줄어든 게 아니라 환경이 바뀐 것이라는 관점",
+    "깊이 읽기는 훈련으로 되찾을 수 있다는 관점",
+    "읽는 방식이 달라졌을 뿐이라는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.7,
+    "FROM_WORK": 0.7
+   },
+   "min_minutes": 5,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "디지털 독서와 깊이 읽기, 독서율 통계"
+  },
+  {
+   "key": "music_memory",
+   "category": "CULTURE",
+   "question": "왜 어떤 노래는 특정 시절을 데려올까?",
+   "summary": "음악과 기억이 엮이는 방식에 대한 이야기예요.",
+   "angles": [
+    "음악은 감정 기억을 깨우는 열쇠라는 관점",
+    "10대와 20대의 음악이 유독 오래 남는다는 관점",
+    "새로운 음악이 새로운 기억을 만든다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.6,
+    "FROM_WORK": 0.9
+   },
+   "min_minutes": 5,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "음악과 자전적 기억, 회고 절정(reminiscence bump) 연구"
+  },
+  {
+   "key": "work_identity",
+   "category": "CULTURE",
+   "question": "일은 나를 설명할 수 있을까?",
+   "summary": "직업이 곧 정체성이 되는 시대에 대한 철학적 질문이에요.",
+   "angles": [
+    "일은 자아실현의 중요한 무대라는 관점",
+    "일과 나를 분리해야 건강하다는 관점",
+    "일의 의미는 스스로 만들어 가는 것이라는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.8,
+    "FROM_WORK": 0.7
+   },
+   "min_minutes": 6,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "일과 정체성, 소명 의식, 노동의 의미에 관한 철학과 연구"
+  },
+  {
+   "key": "four_day_week",
+   "category": "SOCIETY",
+   "question": "주 4일제, 정말 일을 더 잘하게 만들까?",
+   "summary": "국내외 시범 사례와 서로 다른 입장을 나란히 놓고 생각해 봐요.",
+   "angles": [
+    "근무일이 줄어도 생산성이 유지된다는 관점",
+    "업종과 기업 규모에 따라 현실성이 다르다는 관점",
+    "근로시간보다 일하는 방식이 먼저라는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.8,
+    "FROM_WORK": 0.7
+   },
+   "min_minutes": 6,
+   "fresh_sources": true,
+   "sensitivity": "careful",
+   "search_hint": "주 4일제 시범 운영 결과, 국내 도입 논의 최신 기사"
+  },
+  {
+   "key": "ai_jobs",
+   "category": "SOCIETY",
+   "question": "AI는 내 일을 가져갈까, 바꿀까?",
+   "summary": "AI와 일자리에 관한 최근 자료와 엇갈리는 전망을 함께 살펴봐요.",
+   "angles": [
+    "AI가 많은 일자리를 대체할 것이라는 관점",
+    "AI가 일을 없애기보다 바꿀 것이라는 관점",
+    "변화의 속도와 대비가 관건이라는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.9,
+    "FROM_WORK": 0.6
+   },
+   "min_minutes": 6,
+   "fresh_sources": true,
+   "sensitivity": "careful",
+   "search_hint": "생성형 AI와 일자리 영향 최신 보고서와 기사"
+  },
+  {
+   "key": "low_birth_rate",
+   "category": "SOCIETY",
+   "question": "저출생, 개인의 선택일까 사회의 문제일까?",
+   "summary": "최근 통계와 정책, 그리고 서로 다른 시각을 함께 들어 봐요.",
+   "angles": [
+    "주거와 일자리 같은 구조적 요인이 크다는 관점",
+    "삶의 방식과 가치관이 달라졌다는 관점",
+    "정책보다 문화와 일하는 방식의 변화가 필요하다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.6,
+    "FROM_WORK": 0.7
+   },
+   "min_minutes": 7,
+   "fresh_sources": true,
+   "sensitivity": "careful",
+   "search_hint": "한국 합계출산율 최신 통계, 저출생 정책 최신 기사"
+  },
+  {
+   "key": "housing_generation",
+   "category": "SOCIETY",
+   "question": "내 집 마련은 왜 세대마다 다른 이야기가 될까?",
+   "summary": "집을 둘러싼 세대별 경험과 최근 자료를 함께 생각해 봐요.",
+   "angles": [
+    "집값과 소득의 격차가 핵심이라는 관점",
+    "집에 대한 인식과 가치관이 달라졌다는 관점",
+    "소유보다 주거 안정이 더 중요하다는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.6,
+    "FROM_WORK": 0.7
+   },
+   "min_minutes": 7,
+   "fresh_sources": true,
+   "sensitivity": "careful",
+   "search_hint": "소득 대비 주택가격 비율, 세대별 자가 보유율 최신 통계"
+  },
+  {
+   "key": "misinformation",
+   "category": "SOCIETY",
+   "question": "가짜 뉴스는 왜 진짜보다 빨리 퍼질까?",
+   "summary": "잘못된 정보가 퍼지는 방식과 우리가 할 수 있는 일을 살펴봐요.",
+   "angles": [
+    "플랫폼 구조가 문제라는 관점",
+    "자극적인 정보에 끌리는 사람의 심리가 문제라는 관점",
+    "개인의 미디어 리터러시가 해법이라는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.7,
+    "FROM_WORK": 0.7
+   },
+   "min_minutes": 6,
+   "fresh_sources": true,
+   "sensitivity": "normal",
+   "search_hint": "허위정보 확산 연구, 팩트체크 최신 동향"
+  },
+  {
+   "key": "political_talk",
+   "category": "SOCIETY",
+   "question": "정치 이야기는 왜 가까운 사이일수록 어려울까?",
+   "summary": "특정 입장이 아니라, 다른 생각을 가진 사람과 대화하는 법을 이야기해요.",
+   "angles": [
+    "가까운 사이일수록 정치 이야기는 피하는 게 낫다는 관점",
+    "다른 생각을 나누는 연습이 필요하다는 관점",
+    "입장보다 그 뒤의 가치를 묻자는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.5,
+    "FROM_WORK": 0.7
+   },
+   "min_minutes": 6,
+   "fresh_sources": true,
+   "sensitivity": "careful",
+   "search_hint": "정치적 양극화와 대인관계 연구, 정치 대화에 관한 최신 조사"
+  },
+  {
+   "key": "work_off",
+   "category": "WORK",
+   "question": "나는 왜 퇴근하고도 회사 생각을 멈추지 못할까?",
+   "summary": "몸은 회사를 나왔는데 머릿속은 아직 회의실에 있는 날, 일과 나 사이에 선을 긋는 방법을 생각해 봐요.",
+   "angles": [
+    "끝내지 못한 일이 머릿속에 계속 남는다는 관점",
+    "일과 나를 분리하는 작은 퇴근 의식이 필요하다는 관점",
+    "회사 생각이 꼭 나쁜 것만은 아니라는 관점"
+   ],
+   "commute_fit": {
+    "TO_WORK": 0.2,
+    "FROM_WORK": 1.0
+   },
+   "min_minutes": 6,
+   "fresh_sources": false,
+   "sensitivity": "normal",
+   "search_hint": "퇴근 후 업무 생각 반추(work rumination), 심리적 분리(psychological detachment), 자이가르닉 효과, 퇴근 의식"
+  }
+ ]
+}

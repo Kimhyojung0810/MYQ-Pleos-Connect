@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://roadpod.example/schemas/vehicle-context.v1.json",
+  "title": "ROADPOD context.updated envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "event_id", "event_type", "session_id", "timestamp", "payload"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "event_id": {"type": "string", "minLength": 1},
+    "event_type": {"const": "context.updated"},
+    "session_id": {"type": "string", "minLength": 1},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "payload": {
+      "type": "object", "additionalProperties": false,
+      "required": ["commute_type", "vehicle", "navigation", "traffic", "weather", "source_mode"],
+      "properties": {
+        "commute_type": {"enum": ["TO_WORK", "FROM_WORK", "OTHER", "UNKNOWN"]},
+        "vehicle": {
+          "type": "object", "additionalProperties": false,
+          "required": ["motion_state", "speed_kmh", "wiper_active", "parked_confirmed"],
+          "properties": {
+            "motion_state": {"enum": ["MOVING", "STOPPED", "PARKED", "UNKNOWN"]},
+            "speed_kmh": {"type": ["number", "null"], "minimum": 0},
+            "wiper_active": {"type": ["boolean", "null"]},
+            "parked_confirmed": {"type": "boolean"}
+          }
+        },
+        "navigation": {
+          "type": "object", "additionalProperties": false,
+          "required": ["road_name", "road_segment_id", "eta_seconds", "guidance_active"],
+          "properties": {
+            "road_name": {"type": ["string", "null"]},
+            "road_segment_id": {"type": ["string", "null"]},
+            "eta_seconds": {"type": ["integer", "null"], "minimum": 0},
+            "guidance_active": {"type": "boolean"}
+          }
+        },
+        "traffic": {
+          "type": "object", "additionalProperties": false,
+          "required": ["congestion", "verified"],
+          "properties": {
+            "congestion": {"enum": ["FREE", "SLOW", "JAM", "UNKNOWN"]},
+            "verified": {"type": "boolean"}
+          }
+        },
+        "weather": {
+          "type": "object", "additionalProperties": false,
+          "required": ["condition", "verified"],
+          "properties": {
+            "condition": {"enum": ["CLEAR", "CLOUDY", "RAIN", "SNOW", "UNKNOWN"]},
+            "verified": {"type": "boolean"}
+          }
+        },
+        "source_mode": {"enum": ["SIMULATED", "REAL", "MIXED"]}
+      }
+    }
+  }
+}
